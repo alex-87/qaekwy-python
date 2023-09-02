@@ -10,6 +10,7 @@ with open("README.md", "r", encoding="UTF-8") as fh:
 setup(
     name="qaekwy",
     version=qaekwy.__version__,
+    license=qaekwy.__license__,
     author=qaekwy.__author__,
     author_email=qaekwy.__author_email__,
     keywords=[
@@ -23,10 +24,9 @@ setup(
     description="Python Client library for Qaekwy Operational Research Solver",
     long_description_content_type = "text/markdown",
     long_description=long_description,
-    url="https://github.com/alex-87/qaekwy-python",
-    documentation="https://docs.qaekwy.io",
+    url="https://qaekwy.io",
     classifiers=[
-        "Development Status :: 1 - Planning",
+        "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
@@ -43,5 +43,10 @@ setup(
         "qaekwy.model.constraint",
         "qaekwy.exception",
     ],
-    install_requires=["json", "requests"],
+    project_urls={
+        'Homepage': 'https://qaekwy.io',
+        'Documentation': 'https://docs.qaekwy.io',
+        'Issues tracker': 'https://github.com/alex-87/qaekwy-python/issues',
+        'Github': 'https://github.com/alex-87/qaekwy-python',
+    },
 )

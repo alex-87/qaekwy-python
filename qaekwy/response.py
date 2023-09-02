@@ -73,7 +73,6 @@ class NodeStatus:  # pylint: disable=too-many-instance-attributes, too-few-publi
         self.is_awake = is_awake
 
 
-
 class AbstractResponse(ABC):
     """
     Abstract base class for defining responses received from the optimization engine.

@@ -3,8 +3,8 @@
 *Operational Research at your fingertips.*
 
 The Qaekwy Python Client serves as a powerful tool to interact with the Qaekwy optimization
-solver engine through its API. This client provides a convenient
-and programmatic way to **create**, **model**, and **solve** optimization problems using Qaekwy, streamlining
+solver engine through its API. This client provides a convenient and programmatic way to
+**create**, **model**, and **solve** optimization problems using Qaekwy, streamlining
 the process of **formulating complex problems and finding optimal solutions**.
 
 Qaekwy is small optimization problem solver engine designed to tackle a wide range of
@@ -14,17 +14,17 @@ algorithms to find optimal solutions to complex problems.
 
 ## Features
 
-- **Effortless Optimization:** Qaekwy abstracts away the complexities of communication with
-optimization engines. Send requests and receive responses using intuitive Python methods.
-
 - **Modeling Made Easy:** Define variables, constraints, and objective functions seamlessly.
 Qaekwy's `Modeller` class helps you create optimization models with clarity and precision.
 
 - **Diverse Constraint Support:** Qaekwy supports various constraint types, from simple arithmetic
 to complex mathematical expressions. Create constraints that accurately represent real-world scenarios.
 
-- **Flexibility**: Devs can leverage the client to tailor optimization problems to their specific
-needs by utilizing Qaekwy's modeling capabilities. This includes handling various types of constraints,
+- **Effortless Optimization:** Qaekwy abstracts away the complexities of communication with
+optimization engine. Send requests and receive responses using intuitive methods.
+
+- **Flexibility**: You can leverage the Qaekwy Python Client to tailor optimization problems to their specific
+needs by utilizing Qaekwy's modelling capabilities. This includes handling various types of constraints,
 objectives, and solver algorithms.
 
 
@@ -99,6 +99,7 @@ list_of_solutions = response.get_solutions()
 for solution in list_of_solutions:
     print(f"Optimal solution: x = {solution.x}")
     print(f"Optimal solution: y = {solution.y}")
+    print(f"Optimal solution: z = {solution.z}")
 ```
 
 Output:

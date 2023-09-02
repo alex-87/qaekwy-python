@@ -8,7 +8,7 @@ Methods:
     add_variable(variable: Union[Variable, ArrayVariable]) -> Modeller:
         Adds a variable to the optimization model.
 
-    add_constraint(constraint: AbstractConstraint) -> Modeller:
+    add_constraint(constraint: Union[AbstractConstraint, Expression]) -> Modeller:
         Adds a constraint to the optimization model.
 
     add_objective(objective: Union[SpecificMinimum, SpecificMaximum]) -> Modeller:
@@ -34,10 +34,11 @@ Note:
 from typing import Union
 from qaekwy.exception.model_failure import ModelFailure
 from qaekwy.model.constraint.abstract_constraint import AbstractConstraint
+from qaekwy.model.constraint.relational import RelationalExpression
 from qaekwy.model.cutoff import Cutoff
 from qaekwy.model.searcher import SearcherType
 from qaekwy.model.specific import SpecificMaximum, SpecificMinimum
-from qaekwy.model.variable.variable import ArrayVariable, Variable
+from qaekwy.model.variable.variable import ArrayVariable, Expression, Variable
 
 
 class Modeller:
@@ -54,7 +55,7 @@ class Modeller:
 
     Methods:
         add_variable(variable: Union[Variable, ArrayVariable]): Add a variable to the model.
-        add_constraint(constraint: AbstractConstraint): Add a constraint to the model.
+        add_constraint(constraint: Union[AbstractConstraint, Expression]): Add a constraint to the model.
         add_objective(objective: Union[SpecificMinimum, SpecificMaximum]): Add an objective.
         set_searcher(searcher: SearcherType): Set the searcher type for optimization.
         set_cutoff(cutoff: Cutoff): Set the cutoff condition for optimization.
@@ -87,17 +88,21 @@ class Modeller:
         self.variable_list.append(variable)
         return self
 
-    def add_constraint(self, constraint: AbstractConstraint):
+    def add_constraint(self, constraint: Union[AbstractConstraint, Expression]):
         """
         Add a constraint to the model.
 
         Args:
-            constraint (AbstractConstraint): The constraint to be added.
+            constraint (Union[AbstractConstraint, Expression]): The constraint to be added.
 
         Returns:
             Modeller: The modeller instance for method chaining.
         """
-        self.constraint_list.append(constraint)
+        self.constraint_list.append(
+            RelationalExpression(constraint)
+            if isinstance(constraint, Expression)
+            else constraint
+        )
         return self
 
     def add_objective(self, objective: Union[SpecificMinimum, SpecificMaximum]):
