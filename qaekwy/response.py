@@ -40,7 +40,7 @@ Note:
 
 """
 from abc import ABC
-
+from typing import List
 import json
 from qaekwy.explanation import Explanation
 
@@ -278,7 +278,7 @@ class SolutionResponse(AbstractResponse):
 
     """
 
-    def get_solutions(self) -> list[Solution]:
+    def get_solutions(self) -> List[Solution]:
         """
         Retrieve a list of solutions provided by the engine.
 
