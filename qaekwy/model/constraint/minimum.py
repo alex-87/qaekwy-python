@@ -1,53 +1,40 @@
-"""ConstraintMinimum Module
-
-This module defines the ConstraintMinimum class, which represents a
-constraint to enforce a minimum value relationship between three variables.
-
-Classes:
-    ConstraintMinimum: Represents a constraint to enforce a minimum
-    value relationship between three variables.
-
+"""
+This module defines the ConstraintMinimum class.
 """
 
+from typing import List
 from qaekwy.model.constraint.abstract_constraint import AbstractConstraint
 from qaekwy.model.variable.variable import Variable
 
 
 class ConstraintMinimum(AbstractConstraint):
-    """
-    Represents a constraint to enforce a minimum value relationship between two variables.
-
-    This constraint enforces min{var_1, var_2} == var_3
+    """Enforces that min(`var_1`, `var_2`) = `var_3`.
 
     Args:
-        var_1 (Variable): The first variable in the minimum value relationship.
-        var_2 (Variable): The second variable in the minimum value relationship.
-        var_3 (Variable): The third variable in the minimum value relationship.
-        constraint_name (str, optional): A name for the constraint.
-
-    Attributes:
-        var_1 (Variable): The first variable in the minimum value relationship.
-        var_2 (Variable): The second variable in the minimum value relationship.
-        var_3 (Variable): The third variable in the minimum value relationship.
-
-    Methods:
-        to_json(): Returns a JSON representation of the constraint.
+        var_1: The first variable.
+        var_2: The second variable.
+        var_3: The variable to store the minimum.
+        constraint_name: A name for the constraint.
 
     Example:
-        min_constraint = ConstraintMinimum(variable_1, variable_2, variable_3, "min_constraint")
+        >>> from qaekwy.model.variable.integer import IntegerVariable
+        >>> from qaekwy.model.constraint.minimum import ConstraintMinimum
+        >>> x = IntegerVariable("x", 0, 10)
+        >>> y = IntegerVariable("y", 0, 10)
+        >>> z = IntegerVariable("z", 0, 10)
+        >>> constraint = ConstraintMinimum(x, y, z)
     """
 
     def __init__(
         self, var_1: Variable, var_2: Variable, var_3: Variable, constraint_name=None
     ) -> None:
-        """
-        Initialize a new minimum value constraint instance.
+        """Initializes a new minimum constraint.
 
         Args:
-            var_1 (Variable): The first variable in the minimum value relationship.
-            var_2 (Variable): The second variable in the minimum value relationship.
-            var_3 (Variable): The third variable in the minimum value relationship.
-            constraint_name (str, optional): A name for the constraint.
+            var_1: The first variable.
+            var_2: The second variable.
+            var_3: The variable to store the minimum.
+            constraint_name: A name for the constraint.
         """
         super().__init__(constraint_name)
         self.var_1 = var_1
@@ -55,12 +42,7 @@ class ConstraintMinimum(AbstractConstraint):
         self.var_3 = var_3
 
     def to_json(self) -> dict:
-        """
-        Convert the constraint to a JSON representation.
-
-        Returns:
-            dict: A dictionary containing constraint information in JSON format.
-        """
+        """Returns a JSON representation of the constraint."""
         return {
             "name": self.constraint_name,
             "v1": self.var_1.var_name,
@@ -68,3 +50,32 @@ class ConstraintMinimum(AbstractConstraint):
             "v3": self.var_3.var_name,
             "type": "min",
         }
+
+    @staticmethod
+    def from_json(json_data: dict, variables: List) -> "ConstraintMinimum":
+        """Creates a ConstraintMinimum instance from a JSON object.
+
+        Args:
+            json_data: A dictionary representing the constraint.
+            variables: The list of variables in the model.
+
+        Returns:
+            An instance of the ConstraintMinimum class.
+        """
+        var1_name = json_data["v1"]
+        var2_name = json_data["v2"]
+        var3_name = json_data["v3"]
+
+        var1 = next((v for v in variables if v.var_name == var1_name), None)
+        if var1 is None:
+            raise ValueError(f"Variable '{var1_name}' not found in the model.")
+
+        var2 = next((v for v in variables if v.var_name == var2_name), None)
+        if var2 is None:
+            raise ValueError(f"Variable '{var2_name}' not found in the model.")
+
+        var3 = next((v for v in variables if v.var_name == var3_name), None)
+        if var3 is None:
+            raise ValueError(f"Variable '{var3_name}' not found in the model.")
+
+        return ConstraintMinimum(var1, var2, var3, json_data.get("name"))

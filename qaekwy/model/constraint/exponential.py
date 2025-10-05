@@ -1,64 +1,69 @@
-"""ConstraintExponential Module
-
-This module defines the ConstraintExponential class, which represents
-a constraint to enforce an exponential relationship between two variables.
-
-Classes:
-    ConstraintExponential: Represents a constraint to enforce an
-    exponential relationship between two variables.
-
+"""
+This module defines the ConstraintExponential class.
 """
 
+from typing import List
 from qaekwy.model.constraint.abstract_constraint import AbstractConstraint
 from qaekwy.model.variable.variable import Variable
 
 
 class ConstraintExponential(AbstractConstraint):
-    """
-    Represents a constraint to enforce an exponential relationship between two variables.
-
-    This constraint enforces that the exponential of var_1 is equal to var_2.
+    """Enforces that exp(`var_1`) = `var_2`.
 
     Args:
-        var_1 (Variable): The base variable in the exponential relationship.
-        var_2 (Variable): The result variable of the exponential relationship.
-        constraint_name (str, optional): A name for the constraint.
-
-    Attributes:
-        var_1 (Variable): The base variable in the exponential relationship.
-        var_2 (Variable): The result variable of the exponential relationship.
-
-    Methods:
-        to_json(): Returns a JSON representation of the constraint.
+        var_1: The exponent.
+        var_2: The result of the exponential.
+        constraint_name: A name for the constraint.
 
     Example:
-        exponential_constraint =
-            ConstraintExponential(base_variable, result_variable, "exponential_constraint")
+        >>> from qaekwy.model.variable.float import FloatVariable
+        >>> from qaekwy.model.constraint.exponential import ConstraintExponential
+        >>> x = FloatVariable("x", 0, 10)
+        >>> y = FloatVariable("y", 1, 22027)
+        >>> constraint = ConstraintExponential(x, y)
     """
 
     def __init__(self, var_1: Variable, var_2: Variable, constraint_name=None) -> None:
-        """
-        Initialize a new exponential constraint instance.
+        """Initializes a new exponential constraint.
 
         Args:
-            var_1 (Variable): The base variable in the exponential relationship.
-            var_2 (Variable): The result variable of the exponential relationship.
-            constraint_name (str, optional): A name for the constraint.
+            var_1: The exponent.
+            var_2: The result of the exponential.
+            constraint_name: A name for the constraint.
         """
         super().__init__(constraint_name)
         self.var_1 = var_1
         self.var_2 = var_2
 
     def to_json(self) -> dict:
-        """
-        Convert the constraint to a JSON representation.
-
-        Returns:
-            dict: A dictionary containing constraint information in JSON format.
-        """
+        """Returns a JSON representation of the constraint."""
         return {
             "name": self.constraint_name,
             "v1": self.var_1.var_name,
             "v2": self.var_2.var_name,
-            "type": "div",
+            "type": "exp",
         }
+
+    @staticmethod
+    def from_json(json_data: dict, variables: List) -> "ConstraintExponential":
+        """Creates a ConstraintExponential instance from a JSON object.
+
+        Args:
+            json_data: A dictionary representing the constraint.
+            variables: The list of variables in the model.
+
+        Returns:
+            An instance of the ConstraintExponential class.
+        """
+        var1_name = json_data["v1"]
+        var2_name = json_data["v2"]
+
+        var1 = next((v for v in variables if v.var_name == var1_name), None)
+        if var1 is None:
+            raise ValueError(f"Variable '{var1_name}' not found in the model.")
+
+        var2 = next((v for v in variables if v.var_name == var2_name), None)
+        if var2 is None:
+            raise ValueError(f"Variable '{var2_name}' not found in the model.")
+
+        return ConstraintExponential(var1, var2, json_data.get("name"))

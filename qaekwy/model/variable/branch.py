@@ -17,7 +17,7 @@ Classes:
 from enum import Enum
 
 
-class BranchVal(Enum):  # pylint: disable=too-few-public-methods
+class BranchVal(Enum):
     """
     Represents brancher value strategies.
 
@@ -26,7 +26,7 @@ class BranchVal(Enum):  # pylint: disable=too-few-public-methods
     """
 
 
-class BranchVar(Enum):  # pylint: disable=too-few-public-methods
+class BranchVar(Enum):
     """
     Represents brancher variable strategies.
 
@@ -55,6 +55,13 @@ class BranchIntegerVal(BranchVal):
     VAL_SPLIT_MIN = "VAL_SPLIT_MIN"
     VAL_SPLIT_MAX = "VAL_SPLIT_MAX"
 
+    @staticmethod
+    def from_json(json_data: str) -> "BranchIntegerVal":
+        """
+        Creates a BranchIntegerVal instance from a JSON string.
+        """
+        return BranchIntegerVal(json_data)
+
 
 class BranchFloatVal(BranchVal):
     """
@@ -71,6 +78,13 @@ class BranchFloatVal(BranchVal):
     VAL_SPLIT_MIN = "VAL_SPLIT_MIN"
     VAL_SPLIT_MAX = "VAL_SPLIT_MAX"
 
+    @staticmethod
+    def from_json(json_data: str) -> "BranchFloatVal":
+        """
+        Creates a BranchFloatVal instance from a JSON string.
+        """
+        return BranchFloatVal(json_data)
+
 
 class BranchBooleanVal(BranchVal):
     """
@@ -84,6 +98,13 @@ class BranchBooleanVal(BranchVal):
     VAL_RND = "VAL_RND"
     VAL_MIN = "VAL_MIN"
     VAL_MAX = "VAL_MAX"
+
+    @staticmethod
+    def from_json(json_data: str) -> "BranchBooleanVal":
+        """
+        Creates a BranchBooleanVal instance from a JSON string.
+        """
+        return BranchBooleanVal(json_data)
 
 
 class BranchIntegerVar(BranchVar):
@@ -110,6 +131,13 @@ class BranchIntegerVar(BranchVar):
     VAR_DEGREE_SIZE_MIN = "VAR_DEGREE_SIZE_MIN"
     VAR_DEGREE_SIZE_MAX = "VAR_DEGREE_SIZE_MAX"
 
+    @staticmethod
+    def from_json(json_data: str) -> "BranchIntegerVar":
+        """
+        Creates a BranchIntegerVar instance from a JSON string.
+        """
+        return BranchIntegerVar(json_data)
+
 
 class BranchFloatVar(BranchVar):
     """
@@ -132,6 +160,13 @@ class BranchFloatVar(BranchVar):
     VAR_DEGREE_SIZE_MIN = "VAR_DEGREE_SIZE_MIN"
     VAR_DEGREE_SIZE_MAX = "VAR_DEGREE_SIZE_MAX"
 
+    @staticmethod
+    def from_json(json_data: str) -> "BranchFloatVar":
+        """
+        Creates a BranchFloatVar instance from a JSON string.
+        """
+        return BranchFloatVar(json_data)
+
 
 class BranchBooleanVar(BranchVar):
     """
@@ -145,3 +180,10 @@ class BranchBooleanVar(BranchVar):
     VAR_RND = "VAR_RND"
     VAR_DEGREE_SIZE_MIN = "VAR_DEGREE_SIZE_MIN"
     VAR_DEGREE_SIZE_MAX = "VAR_DEGREE_SIZE_MAX"
+
+    @staticmethod
+    def from_json(json_data: str) -> "BranchBooleanVar":
+        """
+        Creates a BranchBooleanVar instance from a JSON string.
+        """
+        return BranchBooleanVar(json_data)

@@ -5,6 +5,7 @@ import unittest
 from qaekwy.model.variable.integer import IntegerVariable
 from qaekwy.model.constraint.modulo import ConstraintModulo
 
+
 class TestConstraintModulo(unittest.TestCase):
 
     def setUp(self):
@@ -17,7 +18,7 @@ class TestConstraintModulo(unittest.TestCase):
             self.dividend_variable,
             self.divisor_variable,
             self.result_variable,
-            "modulo_constraint"
+            "modulo_constraint",
         )
         self.assertEqual(constraint.var_1, self.dividend_variable)
         self.assertEqual(constraint.var_2, self.divisor_variable)
@@ -29,16 +30,24 @@ class TestConstraintModulo(unittest.TestCase):
             self.dividend_variable,
             self.divisor_variable,
             self.result_variable,
-            "modulo_constraint"
+            "modulo_constraint",
         )
         expected_json = {
             "name": "modulo_constraint",
             "v1": "dividend_variable",
             "v2": "divisor_variable",
             "v3": "result_variable",
-            "type": "mod"
+            "type": "mod",
         }
-        self.assertEqual(constraint.to_json(), expected_json)
+        self.assertDictEqual(
+            constraint.to_json(),
+            constraint.from_json(
+                expected_json,
+                [self.dividend_variable, self.divisor_variable, self.result_variable],
+            ).to_json(),
+            expected_json,
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

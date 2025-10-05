@@ -5,6 +5,7 @@ import unittest
 from qaekwy.model.variable.integer import IntegerVariable
 from qaekwy.model.constraint.multiply import ConstraintMultiply
 
+
 class TestConstraintMultiply(unittest.TestCase):
 
     def setUp(self):
@@ -17,7 +18,7 @@ class TestConstraintMultiply(unittest.TestCase):
             self.variable_1,
             self.variable_2,
             self.result_variable,
-            "multiply_constraint"
+            "multiply_constraint",
         )
         self.assertEqual(constraint.var_1, self.variable_1)
         self.assertEqual(constraint.var_2, self.variable_2)
@@ -29,16 +30,23 @@ class TestConstraintMultiply(unittest.TestCase):
             self.variable_1,
             self.variable_2,
             self.result_variable,
-            "multiply_constraint"
+            "multiply_constraint",
         )
         expected_json = {
             "name": "multiply_constraint",
             "v1": "variable_1",
             "v2": "variable_2",
             "v3": "result_variable",
-            "type": "mul"
+            "type": "mul",
         }
-        self.assertEqual(constraint.to_json(), expected_json)
+        self.assertDictEqual(
+            constraint.to_json(),
+            constraint.from_json(
+                expected_json, [self.variable_1, self.variable_2, self.result_variable]
+            ).to_json(),
+            expected_json,
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

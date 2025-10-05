@@ -1,118 +1,111 @@
-"""ConstraintSorted and ConstraintReverseSorted Module
-
-This module defines the ConstraintSorted and ConstraintReverseSorted classes,
-which represent constraints to enforce sorted and reverse-sorted relationships
-among elements of an array variable.
-
-Classes:
-    ConstraintSorted: Represents a constraint to enforce a sorted relationship
-    among elements of an array variable.
-
-    ConstraintReverseSorted: Represents a constraint to enforce a reverse-sorted
-    relationship among elements of an array variable.
-
+"""
+This module defines constraints for sorting arrays.
 """
 
+from typing import List
 from qaekwy.model.constraint.abstract_constraint import AbstractConstraint
 from qaekwy.model.variable.variable import ArrayVariable
 
 
 class ConstraintSorted(AbstractConstraint):
-    """
-    Represents a constraint to enforce a sorted relationship among elements
-    of an array variable.
-
-    This constraint enforces that the elements of the array variable var_1
-    are in ascending sorted order.
+    """Enforces that the elements of an array are sorted in ascending order.
 
     Args:
-        var_1 (ArrayVariable): The array variable for which the sorted relationship is enforced.
-        constraint_name (str, optional): A name for the constraint.
-
-    Attributes:
-        var_1 (ArrayVariable): The array variable for which the sorted relationship is enforced.
-
-    Methods:
-        to_json(): Returns a JSON representation of the constraint.
+        var_1: The array variable to sort.
+        constraint_name: A name for the constraint.
 
     Example:
-        array_to_sort = ArrayVariable("array_to_sort")
-        sorted_constraint = ConstraintSorted(array_to_sort, "sorted_constraint")
-        constraint_json = sorted_constraint.to_json()
+        >>> from qaekwy.model.variable.integer import IntegerVariableArray
+        >>> from qaekwy.model.constraint.sort import ConstraintSorted
+        >>> x = IntegerVariableArray("x", 5, 0, 10)
+        >>> constraint = ConstraintSorted(x)
     """
 
     def __init__(self, var_1: ArrayVariable, constraint_name=None) -> None:
-        """
-        Initialize a new sorted constraint instance.
+        """Initializes a new sorted constraint.
 
         Args:
-            var_1 (ArrayVariable): The array variable for which the sorted
-            relationship is enforced.
-            constraint_name (str, optional): A name for the constraint.
+            var_1: The array variable to sort.
+            constraint_name: A name for the constraint.
         """
         super().__init__(constraint_name)
         self.var_1 = var_1
 
-    def to_json(self):
-        """
-        Convert the constraint to a JSON representation.
-
-        Returns:
-            dict: A dictionary containing constraint information in JSON format.
-        """
+    def to_json(self) -> dict:
+        """Returns a JSON representation of the constraint."""
         return {
             "name": self.constraint_name,
             "v1": self.var_1.var_name,
             "type": "sorted",
         }
 
+    @staticmethod
+    def from_json(json_data: dict, variables: List) -> "ConstraintSorted":
+        """Creates a ConstraintSorted instance from a JSON object.
+
+        Args:
+            json_data: A dictionary representing the constraint.
+            variables: The list of variables in the model.
+
+        Returns:
+            An instance of the ConstraintSorted class.
+        """
+        var1_name = json_data["v1"]
+
+        var1 = next((v for v in variables if v.var_name == var1_name), None)
+        if var1 is None:
+            raise ValueError(f"Variable '{var1_name}' not found in the model.")
+
+        return ConstraintSorted(var1, json_data.get("name"))
+
 
 class ConstraintReverseSorted(AbstractConstraint):
-    """
-    Represents a constraint to enforce a reverse-sorted relationship
-    among elements of an array variable.
-
-    This constraint enforces that the elements of the array variable var_1
-    are in descending sorted order.
+    """Enforces that the elements of an array are sorted in descending order.
 
     Args:
-        var_1 (ArrayVariable): The array variable for which the reverse-sorted
-        relationship is enforced.
-        constraint_name (str, optional): A name for the constraint.
-
-    Attributes:
-        var_1 (ArrayVariable): The array variable for which the reverse-sorted
-        relationship is enforced.
-
-    Methods:
-        to_json(): Returns a JSON representation of the constraint.
+        var_1: The array variable to sort.
+        constraint_name: A name for the constraint.
 
     Example:
-        reverse_sorted_constraint =
-            ConstraintReverseSorted(array_to_reverse_sort, "reverse_sorted_constraint")
+        >>> from qaekwy.model.variable.integer import IntegerVariableArray
+        >>> from qaekwy.model.constraint.sort import ConstraintReverseSorted
+        >>> x = IntegerVariableArray("x", 5, 0, 10)
+        >>> constraint = ConstraintReverseSorted(x)
     """
 
     def __init__(self, var_1: ArrayVariable, constraint_name=None) -> None:
-        """
-        Initialize a new reverse-sorted constraint instance.
+        """Initializes a new reverse sorted constraint.
 
         Args:
-            var_1 (ArrayVariable): The array variable for which the reverse-sorted
-            relationship is enforced.
-            constraint_name (str, optional): A name for the constraint.
+            var_1: The array variable to sort.
+            constraint_name: A name for the constraint.
         """
         super().__init__(constraint_name)
         self.var_1 = var_1
 
-    def to_json(self):
-        """
-        Convert the constraint to a JSON representation.
-
-        Returns:
-            dict: A dictionary containing constraint information in JSON format.
-        """
+    def to_json(self) -> dict:
+        """Returns a JSON representation of the constraint."""
         return {
             "name": self.constraint_name,
             "v1": self.var_1.var_name,
             "type": "rsorted",
         }
+
+    @staticmethod
+    def from_json(json_data: dict, variables: List) -> "ConstraintReverseSorted":
+        """Creates a ConstraintReverseSorted instance from a JSON object.
+
+        Args:
+            json_data: A dictionary representing the constraint.
+            variables: The list of variables in the model.
+
+        Returns:
+            An instance of the ConstraintReverseSorted class.
+        """
+        var1_name = json_data["v1"]
+
+        var1 = next((v for v in variables if v.var_name == var1_name), None)
+        if var1 is None:
+            raise ValueError(f"Variable '{var1_name}' not found in the model.")
+
+        return ConstraintReverseSorted(var1, json_data.get("name"))

@@ -4,6 +4,7 @@ import unittest
 from qaekwy.model.constraint.atan import ConstraintATan
 from qaekwy.model.variable.float import FloatVariable
 
+
 class TestConstraintATan(unittest.TestCase):
 
     def setUp(self):
@@ -22,9 +23,16 @@ class TestConstraintATan(unittest.TestCase):
             "name": "atan_constraint",
             "v1": "var_angle",
             "v2": "var_value",
-            "type": "atan"
+            "type": "atan",
         }
-        self.assertEqual(constraint.to_json(), expected_json)
+        self.assertDictEqual(
+            constraint.to_json(),
+            constraint.from_json(
+                expected_json, [self.var_angle, self.var_value]
+            ).to_json(),
+            expected_json,
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

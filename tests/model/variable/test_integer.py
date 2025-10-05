@@ -2,31 +2,34 @@
 
 import unittest
 
+from qaekwy.model.variable.branch import BranchIntegerVal
 from qaekwy.model.variable.integer import IntegerVariable
 from qaekwy.model.variable.variable import Expression
+
 
 class TestExpression(unittest.TestCase):
     def test_arithmetic_operations(self):
         expr = Expression("x")
         expr_add = expr + 2
         self.assertEqual(str(expr_add), "(x + 2)")
-        
+
         expr_sub = expr - 3
         self.assertEqual(str(expr_sub), "(x - 3)")
-        
+
         expr_mul = expr * 4
         self.assertEqual(str(expr_mul), "x * 4")
-        
+
         expr_div = expr / 5
         self.assertEqual(str(expr_div), "((x) / (5))")
-        
+
         expr_mod = expr % 6
         self.assertEqual(str(expr_mod), "((x) % (6))")
+
 
 class TestVariable(unittest.TestCase):
     def test_variable_to_json(self):
         var = IntegerVariable("x", domain_low=0, domain_high=10)
-        
+
         var_json = var.to_json()
         self.assertEqual(var_json["name"], "x")
         self.assertEqual(var_json["type"], "integer")
@@ -38,7 +41,7 @@ class TestVariable(unittest.TestCase):
 class TestSpecificDomainVariable(unittest.TestCase):
     def test_variable_to_json(self):
         var = IntegerVariable("x", specific_domain=[2, 4, 6])
-        
+
         var_json = var.to_json()
         self.assertEqual(var_json["name"], "x")
         self.assertEqual(var_json["type"], "integer")
@@ -51,7 +54,7 @@ class TestExprVariable(unittest.TestCase):
         var = IntegerVariable("x")
         var_expr = var + 2
         var.expression = var_expr
-        
+
         var_json = var.to_json()
         self.assertEqual(var_json["name"], "x")
         self.assertEqual(var_json["type"], "integer")
@@ -68,6 +71,31 @@ class TestIntegerVariable(unittest.TestCase):
         self.assertEqual(int_var_json["brancher_value"], "VAL_RND")
         self.assertEqual(int_var_json["domlow"], 1)
         self.assertEqual(int_var_json["domup"], 5)
+
+    def test_from_json(self):
+        json_data = {
+            "name": "i",
+            "type": "integer",
+            "brancher_value": "VAL_MAX",
+            "specific_domain": [1, 2, 3],
+        }
+        i = IntegerVariable.from_json(json_data)
+        self.assertEqual(i.var_name, "i")
+        self.assertEqual(i.specific_domain, [1, 2, 3])
+        self.assertEqual(i.branch_val, BranchIntegerVal.VAL_MAX)
+
+        json_data = {
+            "name": "j",
+            "type": "integer",
+            "brancher_value": "VAL_MAX",
+            "domlow": 0,
+            "domup": 100,
+        }
+        i = IntegerVariable.from_json(json_data)
+        self.assertEqual(i.var_name, "j")
+        self.assertEqual(i.domain_low, 0)
+        self.assertEqual(i.domain_high, 100)
+        self.assertEqual(i.branch_val, BranchIntegerVal.VAL_MAX)
 
 
 if __name__ == "__main__":

@@ -1,44 +1,28 @@
-"""ConstraintElement Module
-
-This module defines the ConstraintElement class, which represents
-a constraint to enforce an element-wise relationship between two
-variables based on a mapping array.
-
-Classes:
-    ConstraintElement: Represents a constraint to enforce an element-wise
-    relationship between two variables.
-
+"""
+This module defines the ConstraintElement class.
 """
 
+from typing import List
 from qaekwy.model.constraint.abstract_constraint import AbstractConstraint
 from qaekwy.model.variable.variable import ArrayVariable, Variable
 
 
 class ConstraintElement(AbstractConstraint):
-    """
-    Represents a constraint to enforce an element-wise relationship
-    between two variables.
-
-    This constraint enforces that the values of var_1 and var_2 are
-    related element-wise based on a mapping array.
+    """Enforces that `map_array`[`var_1`] = `var_2`.
 
     Args:
-        map_array (ArrayVariable): The mapping array that defines the element-wise relationship.
-        var_1 (Variable): The first variable in the relationship.
-        var_2 (Variable): The second variable in the relationship.
-        constraint_name (str, optional): A name for the constraint.
-
-    Attributes:
-        map_array (ArrayVariable): The mapping array that defines the element-wise relationship.
-        var_1 (Variable): The first variable in the relationship.
-        var_2 (Variable): The second variable in the relationship.
-
-    Methods:
-        to_json(): Returns a JSON representation of the constraint.
+        map_array: The array of values.
+        var_1: The index variable.
+        var_2: The value at the index.
+        constraint_name: A name for the constraint.
 
     Example:
-        element_constraint =
-            ConstraintElement(mapping_array, variable_1, variable_2, "element_constraint")
+        >>> from qaekwy.model.variable.integer import IntegerVariable, IntegerVariableArray
+        >>> from qaekwy.model.constraint.element import ConstraintElement
+        >>> map_array = IntegerVariableArray("map", 5, 0, 10)
+        >>> index = IntegerVariable("index", 0, 4)
+        >>> value = IntegerVariable("value", 0, 10)
+        >>> constraint = ConstraintElement(map_array, index, value)
     """
 
     def __init__(
@@ -48,27 +32,21 @@ class ConstraintElement(AbstractConstraint):
         var_2: Variable,
         constraint_name=None,
     ) -> None:
-        """
-        Initialize a new element-wise constraint instance.
+        """Initializes a new element constraint.
 
         Args:
-            map_array (ArrayVariable): The mapping array that defines the element-wise relationship.
-            var_1 (Variable): The first variable in the relationship.
-            var_2 (Variable): The second variable in the relationship.
-            constraint_name (str, optional): A name for the constraint.
+            map_array: The array of values.
+            var_1: The index variable.
+            var_2: The value at the index.
+            constraint_name: A name for the constraint.
         """
         super().__init__(constraint_name)
         self.map_array = map_array
         self.var_1 = var_1
         self.var_2 = var_2
 
-    def to_json(self):
-        """
-        Convert the constraint to a JSON representation.
-
-        Returns:
-            dict: A dictionary containing constraint information in JSON format.
-        """
+    def to_json(self) -> dict:
+        """Returns a JSON representation of the constraint."""
         return {
             "name": self.constraint_name,
             "map": self.map_array.var_name,
@@ -76,3 +54,32 @@ class ConstraintElement(AbstractConstraint):
             "v2": self.var_2.var_name,
             "type": "element",
         }
+
+    @staticmethod
+    def from_json(json_data: dict, variables: List) -> "ConstraintElement":
+        """Creates a ConstraintElement instance from a JSON object.
+
+        Args:
+            json_data: A dictionary representing the constraint.
+            variables: The list of variables in the model.
+
+        Returns:
+            An instance of the ConstraintElement class.
+        """
+        map_array_name = json_data["map"]
+        var1_name = json_data["v1"]
+        var2_name = json_data["v2"]
+
+        map_array = next((v for v in variables if v.var_name == map_array_name), None)
+        if map_array is None:
+            raise ValueError(f"Variable '{map_array_name}' not found in the model.")
+
+        var1 = next((v for v in variables if v.var_name == var1_name), None)
+        if var1 is None:
+            raise ValueError(f"Variable '{var1_name}' not found in the model.")
+
+        var2 = next((v for v in variables if v.var_name == var2_name), None)
+        if var2 is None:
+            raise ValueError(f"Variable '{var2_name}' not found in the model.")
+
+        return ConstraintElement(map_array, var1, var2, json_data.get("name"))

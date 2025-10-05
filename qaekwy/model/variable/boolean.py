@@ -8,16 +8,24 @@ Classes:
     BooleanVariableArray: Represents an array of boolean variables.
 
 """
-from qaekwy.model.variable.branch import BranchVal, BranchVar
+
+from typing import Optional
+from qaekwy.model.variable.branch import (
+    BranchBooleanVal,
+    BranchBooleanVar,
+    BranchVal,
+    BranchVar,
+)
 from qaekwy.model.variable.variable import (
     ArrayVariable,
+    Expression,
     ExpressionVariable,
     Variable,
     VariableType,
 )
 
 
-class BooleanVariable(Variable):  # pylint: disable=too-few-public-methods
+class BooleanVariable(Variable):
     """
     Represents a boolean variable.
 
@@ -26,18 +34,38 @@ class BooleanVariable(Variable):  # pylint: disable=too-few-public-methods
     Args:
         var_name (str): The name of the variable.
         branch_val (BranchVal): The brancher value strategy.
+        branch_order (int, optional): The branching order.
 
     Example:
         my_bool_var = BooleanVariable("b1", branch_val=BranchVal.VAL_MIN)
     """
 
-    def __init__(self, var_name: str, branch_val: BranchVal) -> None:
-        super().__init__(var_name, 0, 1, VariableType.BOOLEAN, branch_val)
+    def __init__(
+        self,
+        var_name: str,
+        branch_val: BranchVal = BranchBooleanVal.VAL_RND,
+        branch_order: Optional[int] = -1,
+    ) -> None:
+        super().__init__(
+            var_name=var_name,
+            domain_low=0,
+            domain_high=1,
+            var_type=VariableType.BOOLEAN,
+            branch_val=branch_val,
+            branch_order=branch_order,
+        )
+
+    @staticmethod
+    def from_json(json_data: dict) -> "BooleanVariable":
+        branch_val = BranchBooleanVal.from_json(json_data["brancher_value"])
+        return BooleanVariable(
+            var_name=json_data["name"],
+            branch_val=branch_val,
+            branch_order=json_data.get("branching_order", -1),
+        )
 
 
-class BooleanExpressionVariable(
-    ExpressionVariable
-):  # pylint: disable=too-few-public-methods
+class BooleanExpressionVariable(ExpressionVariable):
     """
     Represents a boolean variable defined by an expression.
 
@@ -49,6 +77,7 @@ class BooleanExpressionVariable(
         var_name (str): The name of the variable.
         expression: The expression defining the variable.
         branch_val (BranchVal): The brancher value strategy.
+        branch_order (int, optional): The branching order.
 
     Example:
         expr = Expression(x[3] > 5)
@@ -56,11 +85,30 @@ class BooleanExpressionVariable(
             BooleanExpressionVariable("b2", expression=expr, branch_val=BranchVal.VAL_MID)
     """
 
-    def __init__(self, var_name: str, expression: str, branch_val: BranchVal) -> None:
-        super().__init__(var_name, expression, VariableType.BOOLEAN, branch_val)
+    def __init__(
+        self,
+        var_name: str,
+        expression: str,
+        branch_val: BranchVal = BranchBooleanVal.VAL_RND,
+        branch_order: Optional[int] = -1,
+    ) -> None:
+        super().__init__(
+            var_name, expression, VariableType.BOOLEAN, branch_val, branch_order
+        )
+
+    @staticmethod
+    def from_json(json_data: dict) -> "BooleanExpressionVariable":
+        branch_val = BranchBooleanVal.from_json(json_data["brancher_value"])
+        expression = Expression(json_data["expr"])
+        return BooleanExpressionVariable(
+            var_name=json_data["name"],
+            expression=expression.expr,
+            branch_val=branch_val,
+            branch_order=json_data.get("branching_order", -1),
+        )
 
 
-class BooleanVariableArray(ArrayVariable):  # pylint: disable=too-few-public-methods
+class BooleanVariableArray(ArrayVariable):
     """
     Represents an array of boolean variables.
 
@@ -71,6 +119,7 @@ class BooleanVariableArray(ArrayVariable):  # pylint: disable=too-few-public-met
         length (int): The length of the array.
         branch_var (BranchVar): The brancher variable strategy.
         branch_val (BranchVal): The brancher value strategy.
+        branch_order (int, optional): The branching order.
 
     Example:
         my_bool_array = BooleanVariableArray("bool_arr", length=3, branch_var=BranchVar.VAR_MIN,
@@ -78,8 +127,32 @@ class BooleanVariableArray(ArrayVariable):  # pylint: disable=too-few-public-met
     """
 
     def __init__(
-        self, var_name: str, length: int, branch_var: BranchVar, branch_val: BranchVal
+        self,
+        var_name: str,
+        length: int,
+        branch_var: BranchVar = BranchBooleanVar.VAR_RND,
+        branch_val: BranchVal = BranchBooleanVal.VAL_RND,
+        branch_order: Optional[int] = -1,
     ) -> None:
         super().__init__(
-            var_name, VariableType.BOOLEAN_ARRAY, length, 0, 1, branch_var, branch_val
+            var_name=var_name,
+            var_type=VariableType.BOOLEAN_ARRAY,
+            length=length,
+            domain_low=0,
+            domain_high=1,
+            branch_var=branch_var,
+            branch_val=branch_val,
+            branch_order=branch_order,
+        )
+
+    @staticmethod
+    def from_json(json_data: dict) -> "BooleanVariableArray":
+        branch_var = BranchBooleanVar.from_json(json_data["brancher_variable"])
+        branch_val = BranchBooleanVal.from_json(json_data["brancher_value"])
+        return BooleanVariableArray(
+            var_name=json_data["name"],
+            length=json_data["length"],
+            branch_var=branch_var,
+            branch_val=branch_val,
+            branch_order=json_data.get("branching_order", -1),
         )

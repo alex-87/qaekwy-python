@@ -10,20 +10,18 @@ Classes:
 """
 
 from typing import Optional
-from qaekwy.model.variable.branch import (
-    BranchFloatVal,
-    BranchFloatVar,
-    BranchVal,
-)
+
+from qaekwy.model.variable.branch import BranchFloatVal, BranchFloatVar, BranchVal
 from qaekwy.model.variable.variable import (
     ArrayVariable,
+    Expression,
     ExpressionVariable,
     Variable,
     VariableType,
 )
 
 
-class FloatVariable(Variable):  # pylint: disable=too-few-public-methods
+class FloatVariable(Variable):
     """
     Represents a float variable.
 
@@ -33,35 +31,44 @@ class FloatVariable(Variable):  # pylint: disable=too-few-public-methods
         var_name (str): The name of the variable.
         domain_low (float, optional): The lower bound of the variable's domain.
         domain_high (float, optional): The upper bound of the variable's domain.
-        specific_domain (list, optional): A specific domain for the variable.
         branch_val (BranchVal, optional): The brancher value strategy.
+        branch_order (int, optional): The branching order.
 
     Example:
         my_float_var =
             FloatVariable("x", domain_low=0.0, domain_high=1.0, branch_val=BranchFloatVal.VAL_RND)
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         var_name: str,
         domain_low: Optional[float] = None,
         domain_high: Optional[float] = None,
-        specific_domain: Optional[list] = None,
         branch_val: BranchVal = BranchFloatVal.VAL_RND,
+        branch_order: Optional[int] = -1,
     ) -> None:
         super().__init__(
-            var_name,
-            domain_low,
-            domain_high,
-            specific_domain,
-            VariableType.FLOAT,
-            branch_val,
+            var_name=var_name,
+            var_type=VariableType.FLOAT,
+            domain_low=domain_low,
+            domain_high=domain_high,
+            branch_val=branch_val,
+            branch_order=branch_order,
+        )
+
+    @staticmethod
+    def from_json(json_data: dict) -> "FloatVariable":
+        branch_val = BranchFloatVal.from_json(json_data["brancher_value"])
+        return FloatVariable(
+            var_name=json_data["name"],
+            domain_low=json_data.get("domlow"),
+            domain_high=json_data.get("domup"),
+            branch_val=branch_val,
+            branch_order=json_data.get("branching_order", -1),
         )
 
 
-class FloatExpressionVariable(
-    ExpressionVariable
-):  # pylint: disable=too-few-public-methods
+class FloatExpressionVariable(ExpressionVariable):
     """
     Represents a float variable defined by an expression.
 
@@ -72,6 +79,7 @@ class FloatExpressionVariable(
         var_name (str): The name of the variable.
         expression: The expression defining the variable.
         branch_val (BranchVal, optional): The brancher value strategy.
+        branch_order (int, optional): The branching order.
 
     Example:
         expr = Expression(0.5 * x + 0.2)
@@ -84,8 +92,26 @@ class FloatExpressionVariable(
         var_name: str,
         expression: str,
         branch_val: BranchVal = BranchFloatVal.VAL_RND,
+        branch_order: Optional[int] = -1,
     ) -> None:
-        super().__init__(var_name, expression, VariableType.FLOAT, branch_val)
+        super().__init__(
+            var_name=var_name,
+            expression=expression,
+            var_type=VariableType.FLOAT,
+            branch_val=branch_val,
+            branch_order=branch_order,
+        )
+
+    @staticmethod
+    def from_json(json_data: dict) -> "FloatExpressionVariable":
+        branch_val = BranchFloatVal.from_json(json_data["brancher_value"])
+        expression = Expression(json_data["expr"])
+        return FloatExpressionVariable(
+            var_name=json_data["name"],
+            expression=expression.expr,
+            branch_val=branch_val,
+            branch_order=json_data.get("branching_order", -1),
+        )
 
 
 class FloatVariableArray(ArrayVariable):
@@ -101,13 +127,14 @@ class FloatVariableArray(ArrayVariable):
         domain_high (float, optional): The upper bound of the variables' domain.
         branch_var (BranchFloatVar, optional): The brancher variable strategy.
         branch_val (BranchVal, optional): The brancher value strategy.
+        branch_order (int, optional): The branching order.
 
     Example:
         my_float_array = FloatVariableArray("arr", length=5, domain_low=0.0, domain_high=10.0,
                                             branch_var=BranchFloatVar.VAR_RND)
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         var_name: str,
         length: int,
@@ -115,13 +142,29 @@ class FloatVariableArray(ArrayVariable):
         domain_high: Optional[float] = None,
         branch_var: BranchFloatVar = BranchFloatVar.VAR_RND,
         branch_val: BranchVal = BranchFloatVal.VAL_RND,
+        branch_order: Optional[int] = -1,
     ) -> None:
         super().__init__(
-            var_name,
-            VariableType.FLOAT_ARRAY,
-            length,
-            domain_low,
-            domain_high,
-            branch_var,
-            branch_val,
+            var_name=var_name,
+            var_type=VariableType.FLOAT_ARRAY,
+            length=length,
+            domain_low=domain_low,
+            domain_high=domain_high,
+            branch_var=branch_var,
+            branch_val=branch_val,
+            branch_order=branch_order,
+        )
+
+    @staticmethod
+    def from_json(json_data: dict) -> "FloatVariableArray":
+        branch_var = BranchFloatVar.from_json(json_data["brancher_variable"])
+        branch_val = BranchFloatVal.from_json(json_data["brancher_value"])
+        return FloatVariableArray(
+            var_name=json_data["name"],
+            length=json_data["length"],
+            domain_low=json_data.get("domlow"),
+            domain_high=json_data.get("domup"),
+            branch_var=branch_var,
+            branch_val=branch_val,
+            branch_order=json_data.get("branching_order", -1),
         )

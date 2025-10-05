@@ -7,6 +7,8 @@ Classes:
 
 """
 
+from typing import List
+
 
 class Explanation:
     """
@@ -17,7 +19,7 @@ class Explanation:
     variables and constraints provided in the explanation content.
 
     Attributes:
-        explanation_content (list): A list containing JSON content representing the explanation.
+        explanation_content (List[dict]): A list containing JSON content representing the explanation.
 
     Methods:
         __init__(explanation_content): Initialize an Explanation instance with JSON content.
@@ -25,7 +27,7 @@ class Explanation:
         get_constraints(): Extract and return explanations for constraints.
     """
 
-    def __init__(self, explanation_content: list) -> None:
+    def __init__(self, explanation_content: List[dict]) -> None:
         self.explanation_content = explanation_content
 
     def get_variables(self) -> dict:

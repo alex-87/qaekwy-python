@@ -69,6 +69,9 @@ def absolute(expr: Expression) -> Expression:
     """
     Returns an expression representing the absolute value of an expression.
 
+    .. deprecated:: 1.0
+        Use :func:`abs` instead.
+
     Args:
         expr (Expression): The expression.
 

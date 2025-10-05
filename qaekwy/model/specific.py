@@ -8,6 +8,8 @@ Classes:
     SpecificMaximum: Represents a constraint to maximize a specific variable.
 
 """
+
+from typing import List
 from qaekwy.model.constraint.abstract_constraint import AbstractConstraint
 from qaekwy.model.variable.variable import Variable
 
@@ -43,6 +45,24 @@ class SpecificMinimum(AbstractConstraint):
         """
         return {"var": self.variable.var_name, "type": "minimize"}
 
+    @staticmethod
+    def from_json(json_data: dict, variables: List) -> "SpecificMinimum":
+        """
+        Creates a SpecificMinimum instance from a JSON object.
+
+        Args:
+            json_data (dict): A dictionary with a "var" key.
+            variables (List): The list of variables in the model.
+
+        Returns:
+            SpecificMinimum: An instance of the SpecificMinimum class.
+        """
+        var_name = json_data["var"]
+        variable = next((v for v in variables if v.var_name == var_name), None)
+        if variable is None:
+            raise ValueError(f"Variable '{var_name}' not found in the model.")
+        return SpecificMinimum(variable)
+
 
 class SpecificMaximum(AbstractConstraint):
     """
@@ -74,3 +94,21 @@ class SpecificMaximum(AbstractConstraint):
             dict: A JSON representation of the constraint.
         """
         return {"var": self.variable.var_name, "type": "maximize"}
+
+    @staticmethod
+    def from_json(json_data: dict, variables: List) -> "SpecificMaximum":
+        """
+        Creates a SpecificMaximum instance from a JSON object.
+
+        Args:
+            json_data (dict): A dictionary with a "var" key.
+            variables (List): The list of variables in the model.
+
+        Returns:
+            SpecificMaximum: An instance of the SpecificMaximum class.
+        """
+        var_name = json_data["var"]
+        variable = next((v for v in variables if v.var_name == var_name), None)
+        if variable is None:
+            raise ValueError(f"Variable '{var_name}' not found in the model.")
+        return SpecificMaximum(variable)

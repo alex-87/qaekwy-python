@@ -1,63 +1,69 @@
-"""ConstraintTan Module
-
-This module defines the ConstraintTan class, which represents a
-constraint to enforce a tangent relationship between two variables.
-
-Classes:
-    ConstraintTan: Represents a constraint to enforce a tangent
-    relationship between two variables.
-
 """
+This module defines the ConstraintTan class.
+"""
+
+from typing import List
 from qaekwy.model.constraint.abstract_constraint import AbstractConstraint
 from qaekwy.model.variable.variable import Variable
 
 
 class ConstraintTan(AbstractConstraint):
-    """
-    Represents a constraint to enforce a tangent relationship between two variables.
-
-    This constraint enforces that the tangent of var_1 is equal to var_2, or vice versa.
+    """Enforces that tan(`var_1`) = `var_2`.
 
     Args:
-        var_1 (Variable): The variable for which the tangent relationship is enforced.
-        var_2 (Variable): The result variable of the tangent relationship.
-        constraint_name (str, optional): A name for the constraint.
-
-    Attributes:
-        var_1 (Variable): The variable for which the tangent relationship is enforced.
-        var_2 (Variable): The result variable of the tangent relationship.
-
-    Methods:
-        to_json(): Returns a JSON representation of the constraint.
+        var_1: The variable to take the tangent of.
+        var_2: The variable to store the result.
+        constraint_name: A name for the constraint.
 
     Example:
-        tangent_constraint =
-            ConstraintTan(variable_to_tangent, result_variable, "tangent_constraint")
+        >>> from qaekwy.model.variable.float import FloatVariable
+        >>> from qaekwy.model.constraint.tan import ConstraintTan
+        >>> x = FloatVariable("x", -1.5707, 1.5707)
+        >>> y = FloatVariable("y", -1000, 1000)
+        >>> constraint = ConstraintTan(x, y)
     """
 
     def __init__(self, var_1: Variable, var_2: Variable, constraint_name=None) -> None:
-        """
-        Initialize a new tangent constraint instance.
+        """Initializes a new tangent constraint.
 
         Args:
-            var_1 (Variable): The variable for which the tangent relationship is enforced.
-            var_2 (Variable): The result variable of the tangent relationship.
-            constraint_name (str, optional): A name for the constraint.
+            var_1: The variable to take the tangent of.
+            var_2: The variable to store the result.
+            constraint_name: A name for the constraint.
         """
         super().__init__(constraint_name)
         self.var_1 = var_1
         self.var_2 = var_2
 
     def to_json(self) -> dict:
-        """
-        Convert the constraint to a JSON representation.
-
-        Returns:
-            dict: A dictionary containing constraint information in JSON format.
-        """
+        """Returns a JSON representation of the constraint."""
         return {
             "name": self.constraint_name,
             "v1": self.var_1.var_name,
             "v2": self.var_2.var_name,
             "type": "tan",
         }
+
+    @staticmethod
+    def from_json(json_data: dict, variables: List) -> "ConstraintTan":
+        """Creates a ConstraintTan instance from a JSON object.
+
+        Args:
+            json_data: A dictionary representing the constraint.
+            variables: The list of variables in the model.
+
+        Returns:
+            An instance of the ConstraintTan class.
+        """
+        var1_name = json_data["v1"]
+        var2_name = json_data["v2"]
+
+        var1 = next((v for v in variables if v.var_name == var1_name), None)
+        if var1 is None:
+            raise ValueError(f"Variable '{var1_name}' not found in the model.")
+
+        var2 = next((v for v in variables if v.var_name == var2_name), None)
+        if var2 is None:
+            raise ValueError(f"Variable '{var2_name}' not found in the model.")
+
+        return ConstraintTan(var1, var2, json_data.get("name"))

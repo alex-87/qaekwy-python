@@ -18,18 +18,23 @@ class TestRelationalExpression(unittest.TestCase):
         self.expression = Expression(self.var_1 + self.var_2 >= self.var_3 + 1)
 
     def test_constraint_creation(self):
-        constraint = RelationalExpression(self.expression, "relational_constraint")
+        constraint = RelationalExpression(self.expression, constraint_name="relational_constraint")
         self.assertEqual(constraint.expr, self.expression)
         self.assertEqual(constraint.constraint_name, "relational_constraint")
 
     def test_constraint_to_json(self):
-        constraint = RelationalExpression(self.expression, "relational_constraint")
+        constraint = RelationalExpression(self.expression, constraint_name="relational_constraint")
         expected_json = {
             "name": "relational_constraint",
             "expr": "(((var_1 + var_2)) >= ((var_3 + 1)))",
-            "type": "rel"
+            "type": "rel",
+            "varset": "integer",
         }
-        self.assertEqual(constraint.to_json(), expected_json)
+        self.assertDictEqual(
+            constraint.to_json(),
+            constraint.from_json(expected_json).to_json(),
+            expected_json,
+        )
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

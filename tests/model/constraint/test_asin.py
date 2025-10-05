@@ -4,6 +4,7 @@ import unittest
 from qaekwy.model.constraint.asin import ConstraintASin
 from qaekwy.model.variable.float import FloatVariable
 
+
 class TestConstraintASin(unittest.TestCase):
 
     def setUp(self):
@@ -22,9 +23,16 @@ class TestConstraintASin(unittest.TestCase):
             "name": "asin_constraint",
             "v1": "var_angle",
             "v2": "var_value",
-            "type": "asin"
+            "type": "asin",
         }
-        self.assertEqual(constraint.to_json(), expected_json)
+        self.assertDictEqual(
+            constraint.to_json(),
+            constraint.from_json(
+                expected_json, [self.var_angle, self.var_value]
+            ).to_json(),
+            expected_json,
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -4,6 +4,7 @@ import unittest
 
 from qaekwy.explanation import Explanation
 
+
 class ExplanationTest(unittest.TestCase):
 
     def test_init(self):
@@ -14,9 +15,13 @@ class ExplanationTest(unittest.TestCase):
         explanation = Explanation(explanation_content)
 
         self.assertEqual(explanation.get_variables()["x"]["type"], "var")
-        self.assertEqual(explanation.get_variables()["x"]["explanation"], "x is a variable")
+        self.assertEqual(
+            explanation.get_variables()["x"]["explanation"], "x is a variable"
+        )
         self.assertEqual(explanation.get_constraints()["y"]["type"], "constraint")
-        self.assertEqual(explanation.get_constraints()["y"]["explanation"], "y is a constraint")
+        self.assertEqual(
+            explanation.get_constraints()["y"]["explanation"], "y is a constraint"
+        )
 
     def test_missing_variable(self):
         explanation_content = [
@@ -35,6 +40,7 @@ class ExplanationTest(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             explanation.get_constraints()["y"]
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -39,20 +39,21 @@ Note:
     status, message, and content.
 
 """
-from abc import ABC
-from typing import List
-import json
-from qaekwy.explanation import Explanation
 
+import json
+from abc import ABC
+from typing import Any, List, Optional
+
+from qaekwy.explanation import Explanation
 from qaekwy.solution import Solution
 
 
-class NodeStatus:  # pylint: disable=too-many-instance-attributes, too-few-public-methods
+class NodeStatus:
     """
     Represents the status of a cluster node.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         identifier: str,
         url: str,
@@ -61,7 +62,7 @@ class NodeStatus:  # pylint: disable=too-many-instance-attributes, too-few-publi
         is_busy: bool,
         number_of_solutions: int,
         is_failed: bool,
-        is_awake,
+        is_awake: bool,
     ) -> None:
         self.identifier = identifier
         self.url = url
@@ -130,12 +131,12 @@ class AbstractResponse(ABC):
             return ""
         return str(self.response_content["message"])
 
-    def get_content(self) -> any:
+    def get_content(self) -> Any:
         """
         Retrieve the content from the response.
 
         Returns:
-            any: The content extracted from the response.
+            Any: The content extracted from the response.
         """
         if "content" not in self.response_content:
             return self.response_content
@@ -184,12 +185,12 @@ class EchoResponse(AbstractResponse):
         """
         return str(self.response_content)
 
-    def get_content(self) -> any:
+    def get_content(self) -> Any:
         """
         Retrieve the content of the response.
 
         Returns:
-            any: The content of the response, which is the echoed message.
+            Any: The content of the response, which is the echoed message.
         """
         return str(self.response_content)
 
@@ -278,13 +279,13 @@ class SolutionResponse(AbstractResponse):
 
     """
 
-    def get_solutions(self) -> List[Solution]:
+    def get_solutions(self) -> Optional[List[Solution]]:
         """
         Retrieve a list of solutions provided by the engine.
 
         Returns:
-            List[Solution]: A list of Solution objects representing the solutions.
-                          Returns None if the response status is not OK.
+            List[Solution] | None: A list of Solution objects representing the solutions,
+                                or None if the response status is not OK.
         """
         if not self.is_status_ok():
             return None
@@ -306,13 +307,13 @@ class ExplanationResponse(AbstractResponse):
 
     """
 
-    def get_explanation(self) -> Explanation:
+    def get_explanation(self) -> Optional[Explanation]:
         """
         Retrieve an Explanation object containing explanations provided by the engine.
 
         Returns:
-            Explanation: An Explanation object representing the explanations.
-                         Returns None if the response status is not OK.
+            Explanation | None: An Explanation object representing the explanations,
+                                or None if the response status is not OK.
         """
         if not self.is_status_ok():
             return None
@@ -404,31 +405,37 @@ class VersionResponse(AbstractResponse):
         return self.response_content["version_release"]
 
 
-class ClusterStatusResponse:  # pylint: disable=too-few-public-methods
+class ClusterStatusResponse(AbstractResponse):
     """
     Represents a response containing cluster status information from the optimization engine.
 
     Attributes:
         response_content (str): The content of the response received from the optimization engine.
-        node_status_list (list[NodeStatus]): A list of NodeStatus instances.
+        node_status_list (List[NodeStatus]): A list of NodeStatus instances.
 
     Methods:
         get_node_status_list(): Retrieve the list of NodeStatus instances.
 
     """
 
-    def __init__(self, response_content):
+    def get_node_status_list(self) -> Optional[List[NodeStatus]]:
         """
-        Initialize a ClusterStatusResponse instance.
+        Retrieve the list of NodeStatus instances.
 
-        Args:
-            response_content (str): The content of the response received from
-            the optimization engine.
+        Returns:
+            List[NodeStatus]: A list of NodeStatus instances representing the status of each node.
         """
-        node_status_list = []
-        j = json.loads(response_content)
 
-        if isinstance(j, list):
+        if not self.response_content:
+            return None
+
+        # Initialize an empty list to hold NodeStatus instances
+        node_status_list: List[NodeStatus] = []
+
+        # Parse the JSON response content
+        j = json.loads(self.response_content)
+
+        if isinstance(j, List):
             for node in j:
                 node_status_list.append(
                     NodeStatus(
@@ -443,4 +450,4 @@ class ClusterStatusResponse:  # pylint: disable=too-few-public-methods
                     )
                 )
 
-            self.node_status_list = node_status_list
+        return node_status_list

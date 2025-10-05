@@ -1,115 +1,120 @@
 # Qaekwy Python Client
 
-*Operational Research at your fingertips.*
+*An Open-source Python framework for constraint programming and optimization*
 
-The Qaekwy Python Client serves as a powerful tool to interact with the Qaekwy optimization
-solver engine through its API. This client provides a convenient and programmatic way to
-**create**, **model**, and **solve** optimization problems using Qaekwy, streamlining
-the process of **formulating complex problems and finding optimal solutions**.
+![GitHub License](https://img.shields.io/github/license/alex-87/qaekwy-python) ![PyPI - Version](https://img.shields.io/pypi/v/qaekwy)
+ ![PyPI - Downloads](https://img.shields.io/pypi/dm/qaekwy) 
 
-Qaekwy is small optimization problem solver engine designed to tackle a wide range of
-real-world challenges. It provides powerful modeling capabilities and efficient solving
-algorithms to find optimal solutions to complex problems.
+The Qaekwy Python Client serves as a powerful tool to interact with the Qaekwy optimization solver engine through its
+API. This client provides a convenient and programmatic way to **create**, **model**, and **solve** optimization problems
+by streamlining the process of **formulating complex problems and finding optimal solutions**.
 
+Qaekwy is small optimization problem solver engine designed to  provide
+powerful modeling capabilities and efficient solving algorithms to find optimal solutions to complex problems.
 
 ## Features
 
-- **Modeling Made Easy:** Define variables, constraints, and objective functions seamlessly.
-Qaekwy's `Modeller` class helps you create optimization models with clarity and precision.
-
-- **Diverse Constraint Support:** Qaekwy supports various constraint types, from simple arithmetic
-to complex mathematical expressions. Create constraints that accurately represent real-world scenarios.
-
-- **Effortless Optimization:** Qaekwy abstracts away the complexities of communication with
-optimization engine. Send requests and receive responses using intuitive methods.
-
-- **Flexibility**: You can leverage the Qaekwy Python Client to tailor optimization problems to their specific
-needs by utilizing Qaekwy's modelling capabilities. This includes handling various types of constraints,
-objectives, and solver algorithms.
-
-
-## Installation
-
-```shell
-pip install qaekwy
-```
+- **Variables**: Supports integer, float, and boolean variables, including arrays for complex models.
+- **Constraints**: Offers a wide range of constraints for flexible problem modeling.
+- **Optimization**: Minimize or maximize objective functions to find optimal solutions.
+- **Flexible Search Strategies**: Choose from algorithms like Depth-First Search (DFS) and Branch and Bound (BAB).
 
 
 ## Documentation
 
 Explore the [Qaekwy Documentation](https://docs.qaekwy.io) for in-depth guides, examples, and usage details.
 
+## Getting Started
 
-## Example
+### Prerequisites
 
-How to use the Qaekwy Python Client to solve a very small optimization problem:
+- **Python 3.12** or higher
+- **pip** (Python package manager)
+
+### Installation
+
+```
+pip install qaekwy
+```
+
+### Verify the installation
+
+```
+python -m qaekwy --version
+```
+
+### Code
+
+Get started with Qaekwy in just a few steps:
+
+- Create a model by defining:
+    - variables
+    - constraints
+    - objectives (*optional*)
+- Run your model and retrieve solutions.
+
+See the Example below for a practical demonstration:
 
 ```python
 from qaekwy.engine import DirectEngine
-from qaekwy.model.constraint.relational import RelationalExpression
 from qaekwy.model.specific import SpecificMaximum
-from qaekwy.model.variable.integer import IntegerVariable
+from qaekwy.model.variable.integer import (
+    IntegerVariable,
+    IntegerExpressionVariable
+)
 from qaekwy.model.modeller import Modeller
 from qaekwy.model.searcher import SearcherType
 
-# Define the optimization problem using Qaekwy Python Client
+# Define the optimization model
 class SimpleOptimizationProblem(Modeller):
     def __init__(self):
         super().__init__()
 
-        # Create a integer variables
-        x = IntegerVariable(var_name="x", domain_low=0, domain_high=10)
-        y = IntegerVariable(var_name="y", domain_low=0, domain_high=10)
-        z = IntegerVariable(var_name="z", domain_low=0, domain_high=10)
+        # Define integer variables with domain [0, 10]
+        x = IntegerVariable("x", domain_low=0, domain_high=10)
+        y = IntegerVariable("y", domain_low=0, domain_high=10)
+        z = IntegerExpressionVariable("z", expression=y - x)
 
-        # Constraints
-        constraint_1 = RelationalExpression(y > 2 * x)
-        constraint_2 = RelationalExpression(x >= 4)
-        constraint_3 = RelationalExpression(z == y - x)
+        # Add variables to the model
+        self.add_variable(x).add_variable(y).add_variable(z)
 
-        # Objective: Maximize z
+        # Define constraints
+        self.add_constraint(y > 2 * x)
+        self.add_constraint(x >= 4)
+
+        # Set objective: Maximize z
         self.add_objective(
             SpecificMaximum(variable=z)
         )
 
-        # Add variable and constraint to the problem
-        self.add_variable(x)
-        self.add_variable(y)
-        self.add_variable(z)
-        self.add_constraint(constraint_1)
-        self.add_constraint(constraint_2)
-        self.add_constraint(constraint_3)
-
-        # Set the search strategy
+        # Set search strategy
         self.set_searcher(SearcherType.BAB)
 
-# Create a Qaekwy engine for interaction with the freely-available Cloud instance
+# Instantiate the cloud-based solver
 qaekwy_engine = DirectEngine()
 
-# Create the optimization problem instance
-optimization_problem = SimpleOptimizationProblem()
+# Build and solve the model
+model = SimpleOptimizationProblem()
+response = qaekwy_engine.model(model=model)
 
-# Request the Qaekwy engine to solve the problem
-response = qaekwy_engine.model(model=optimization_problem)
-
-# Retrieve the list of solutions from the response
-list_of_solutions = response.get_solutions()
-
-# Print the solution(s) obtained
-for solution in list_of_solutions:
-    print(f"Optimal solution: x = {solution.x}")
-    print(f"Optimal solution: y = {solution.y}")
-    print(f"Optimal solution: z = {solution.z}")
+# Display solutions
+for solution in response.get_solutions():
+    print(f"Optimal solution:")
+    print(f"- x = {solution.x}")
+    print(f"- y = {solution.y}")
+    print(f"- z = {solution.z}")
 ```
 
 Output:
 
 ```
-Optimal solution: x = 4
-Optimal solution: y = 10
-Optimal solution: z = 6
+Optimal solution:
+- x = 4
+- y = 10
+- z = 6
 ```
 
 ## License
 
-This software is licensed under the **European Union Public License v1.2**
+- Released under the [European Union Public Licence 1.2 (EUPL 1.2)](https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12).
+- Qaekwy backend [Terms & Conditions](https://docs.qaekwy.io/docs/terms-and-conditions/)

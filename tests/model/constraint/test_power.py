@@ -5,6 +5,7 @@ import unittest
 from qaekwy.model.variable.integer import IntegerVariable
 from qaekwy.model.constraint.power import ConstraintPower
 
+
 class TestConstraintPower(unittest.TestCase):
 
     def setUp(self):
@@ -17,7 +18,7 @@ class TestConstraintPower(unittest.TestCase):
             self.base_variable,
             self.exponent_value,
             self.result_variable,
-            "power_constraint"
+            "power_constraint",
         )
         self.assertEqual(constraint.var_1, self.base_variable)
         self.assertEqual(constraint.var_2, self.exponent_value)
@@ -29,16 +30,23 @@ class TestConstraintPower(unittest.TestCase):
             self.base_variable,
             self.exponent_value,
             self.result_variable,
-            "power_constraint"
+            "power_constraint",
         )
         expected_json = {
             "name": "power_constraint",
             "v1": "base_variable",
             "v2": 2,
             "v3": "result_variable",
-            "type": "pow"
+            "type": "pow",
         }
-        self.assertEqual(constraint.to_json(), expected_json)
+        self.assertDictEqual(
+            constraint.to_json(),
+            constraint.from_json(
+                expected_json, [self.base_variable, self.result_variable]
+            ).to_json(),
+            expected_json,
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

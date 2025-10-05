@@ -7,6 +7,7 @@ Enums:
     RelationType: Represents different types of relational comparisons.
 
 """
+
 from enum import Enum
 
 
@@ -36,3 +37,16 @@ class RelationType(Enum):
     NE = "NE"
     LE = "LE"
     LT = "LT"
+
+    @staticmethod
+    def from_json(json_data: str) -> "RelationType":
+        """
+        Creates a RelationType instance from a string.
+
+        Args:
+            json_data (str): The string representation of the relation type.
+
+        Returns:
+            RelationType: An instance of the RelationType enum.
+        """
+        return RelationType(json_data)

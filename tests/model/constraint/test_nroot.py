@@ -5,6 +5,7 @@ import unittest
 from qaekwy.model.variable.integer import IntegerVariable
 from qaekwy.model.constraint.nroot import ConstraintNRoot
 
+
 class TestConstraintNRoot(unittest.TestCase):
 
     def setUp(self):
@@ -17,7 +18,7 @@ class TestConstraintNRoot(unittest.TestCase):
             self.variable_to_root,
             self.n_value,
             self.result_variable,
-            "nroot_constraint"
+            "nroot_constraint",
         )
         self.assertEqual(constraint.var_1, self.variable_to_root)
         self.assertEqual(constraint.var_2, self.n_value)
@@ -29,16 +30,23 @@ class TestConstraintNRoot(unittest.TestCase):
             self.variable_to_root,
             self.n_value,
             self.result_variable,
-            "nroot_constraint"
+            "nroot_constraint",
         )
         expected_json = {
             "name": "nroot_constraint",
             "v1": "variable_to_root",
             "v2": 3,
             "v3": "result_variable",
-            "type": "nroot"
+            "type": "nroot",
         }
-        self.assertEqual(constraint.to_json(), expected_json)
+        self.assertDictEqual(
+            constraint.to_json(),
+            constraint.from_json(
+                expected_json, [self.variable_to_root, self.result_variable]
+            ).to_json(),
+            expected_json,
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

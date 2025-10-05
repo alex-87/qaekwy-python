@@ -7,6 +7,8 @@ Classes:
 
 """
 
+from typing import List
+
 
 class Solution(dict):
     """
@@ -36,7 +38,7 @@ class Solution(dict):
         z_value = solution.z  # z_value is None
     """
 
-    def __init__(self, solution_json_content: list) -> None:
+    def __init__(self, solution_json_content: List[dict]) -> None:
         self.solution_json_content = solution_json_content
 
         for element in self.solution_json_content:

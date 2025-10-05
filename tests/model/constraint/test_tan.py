@@ -12,7 +12,7 @@ class TestConstraintTan(unittest.TestCase):
         var_1 = FloatVariable("var_1", 0.0, 10.0)
         var_2 = FloatVariable("var_2", 0.0, 10.0)
         tan_constraint = ConstraintTan(var_1, var_2, "tan_constraint")
-        
+
         self.assertEqual(tan_constraint.var_1, var_1)
         self.assertEqual(tan_constraint.var_2, var_2)
         self.assertEqual(tan_constraint.constraint_name, "tan_constraint")
@@ -21,15 +21,20 @@ class TestConstraintTan(unittest.TestCase):
         var_1 = FloatVariable("var_1", 0.0, 10.0)
         var_2 = FloatVariable("var_2", 0.0, 10.0)
         tan_constraint = ConstraintTan(var_1, var_2, "tan_constraint")
-        
+
         expected_json = {
             "name": "tan_constraint",
             "v1": "var_1",
             "v2": "var_2",
-            "type": "tan"
+            "type": "tan",
         }
-        
-        self.assertEqual(tan_constraint.to_json(), expected_json)
 
-if __name__ == '__main__':
+        self.assertDictEqual(
+            tan_constraint.to_json(),
+            tan_constraint.from_json(expected_json, [var_1, var_2]).to_json(),
+            expected_json,
+        )
+
+
+if __name__ == "__main__":
     unittest.main()

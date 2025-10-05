@@ -13,6 +13,7 @@ the Cloud-hosted instance.
 
 Classes:
     AbstractAction: Base class for defining actions to be performed on the optimization engine.
+    DirectEngine: Class representing the Cloud instance optimization engine.
     EchoAction: Action class to send an 'echo' request and retrieve the echo from the engine.
     VersionAction: Action class to request the version information of the optimization engine.
     ResetAction: Action class to reset the state of the optimization engine.
@@ -41,8 +42,8 @@ Utilities:
     Modeller: Class for creating and managing optimization models.
 
 Usage:
-    # Create an Engine client instance to connect to the endpoint URL
-    engine = Engine(endpoint="http://localhost:8000")
+    # Create a DirectEngine client instance to connect to the cloud endpoint
+    engine = DirectEngine()
 
     # Send an 'echo' request to the engine
     echo_response = engine.echo()
@@ -58,13 +59,9 @@ Usage:
 
     # Retrieve the solution from the engine
     solution_response = engine.solution()
-    list_of_solutions = solution_response.get_solutions()
-
-    # Reset the engine's state
-    reset_response = engine.reset()
-
-    # Check the status of the engine
-    status_response = engine.status()
+    if solution_response and solution_response.get_solutions():
+        for sol in solution_response.get_solutions():
+            print(sol)
 
 Note:
     The classes and utilities provided by this module are designed to facilitate
@@ -75,13 +72,14 @@ Note:
 
 """
 
-from abc import ABC, abstractmethod
-
 import json
+from abc import ABC, abstractmethod
+from typing import Any, Optional
+
 import requests
+
 from qaekwy.model import DIRECTENGINE_API_ENDPOINT
 from qaekwy.model.modeller import Modeller
-
 from qaekwy.response import (
     AbstractResponse,
     ClusterStatusResponse,
@@ -93,518 +91,546 @@ from qaekwy.response import (
     VersionResponse,
 )
 
+from . import __software__, __version__
+
 
 class AbstractAction(ABC):
+    """Base abstract class for defining actions on the optimization engine.
+
+    This class provides a common interface for all actions that can be performed
+    on the optimization engine. It handles the communication with the engine's
+    endpoint and provides a method for executing the action.
+
+    Subclasses must implement the `action` method to perform the specific
+    action.
+
+    Attributes:
+        endpoint (str): The endpoint URL of the optimization engine.
+        command (str): The command to be executed on the engine.
+        body (Optional[Any]): The optional body of the request.
+        timeout (Optional[int]): The timeout for the request in seconds.
+        ssl_verify (Optional[bool]): Whether to verify SSL certificates.
     """
-    Base abstract class for defining actions to be performed on the optimization engine.
 
-    This class defines the common structure and behavior for various actions that can be
-    executed on the optimization engine. It provides methods for executing the action and
-    defining the abstract method 'action()' that should be implemented by concrete action classes.
-
-    Methods:
-        execute(): Execute the action and return the response from the engine.
-        action(): Abstract method to be implemented by concrete action classes.
-    """
-
-    def __init__(self, endpoint: str, command: str, body: str = None) -> None:
-        """
-        Initialize an AbstractAction instance.
+    def __init__(
+        self,
+        endpoint: str,
+        command: str,
+        body: Optional[Any] = None,
+        timeout: Optional[int] = 3600,
+        ssl_verify: Optional[bool] = True,
+    ) -> None:
+        """Initializes an AbstractAction instance.
 
         Args:
-            endpoint (str): The endpoint URL of the optimization engine.
-            command (str): The command to be executed on the engine.
-            body (str): The optional body of the request (default is None).
+            endpoint: The endpoint URL of the optimization engine.
+            command: The command to be executed on the engine.
+            body: The optional body of the request (default is None).
+            timeout: The timeout for the request in seconds.
+            ssl_verify: Whether to verify SSL certificates.
         """
         super().__init__()
         self.endpoint = endpoint
         self.command = command
         self.body = body
+        self.timeout = timeout
+        self.ssl_verify = ssl_verify
 
     def execute(self) -> requests.Response:
-        """
-        Execute the action on the optimization engine and return the response.
+        """Executes the action on the optimization engine and returns the response.
 
         Returns:
-            requests.Response: The response from the optimization engine.
+            The response from the optimization engine.
+
+        Raises:
+            requests.HTTPError: If the response status code is 401 (Unauthorized),
+                or if another HTTP error occurs.
+            requests.RequestException: For network-related issues such as
+                timeouts or connection errors.
         """
+        headers = {
+            "User-Agent": f"{__software__}/{__version__}",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Accept-Encoding": "gzip, deflate",
+            "Cache-Control": "no-cache",
+        }
 
-        res = None
+        request_line = f"{self.endpoint.rstrip('/')}/{self.command}"
 
-        if len(self.endpoint) < 6:
-            return None
+        # Execute the request
+        res: Optional[requests.Response] = None
 
-        request_line = self.endpoint
-        if self.endpoint[len(self.endpoint) - 1] != "/":
-            request_line = request_line + "/" + self.command
-        else:
-            request_line = request_line + self.command
+        try:
+            if self.body is None:
+                res = requests.get(
+                    request_line,
+                    timeout=self.timeout,
+                    headers=headers,
+                    verify=self.ssl_verify,
+                )
+            else:
+                res = requests.post(
+                    request_line,
+                    json=self.body,
+                    timeout=self.timeout,
+                    headers=headers,
+                    verify=self.ssl_verify,
+                )
 
-        if self.body is None:
-            res = requests.get(request_line, timeout=30)
-        else:
-            res = requests.post(request_line, self.body, timeout=30)
+            res.raise_for_status()
+
+        except requests.HTTPError as e:
+            raise requests.HTTPError(
+                f"HTTP error occurred: {e.response.status_code} - {e.response.text}"
+            ) from e
+
+        except requests.RequestException as e:
+            raise requests.RequestException(f"Request error occurred: {e}") from e
 
         return res
 
     @abstractmethod
-    def action(self) -> AbstractResponse:
-        """
-        Abstract method to be implemented by concrete action classes.
-        Represents the specific action to be performed on the engine.
+    def action(self) -> Optional[AbstractResponse]:
+        """Abstract method to be implemented by concrete action classes.
+
+        This method should execute the specific action and return a response
+        object.
 
         Returns:
-            AbstractResponse: The response from the optimization engine.
+            The response from the optimization engine.
         """
 
 
 class EchoAction(AbstractAction):
-    """
-    Action class to perform an 'echo' request on the optimization engine.
+    """Action class to perform an 'echo' request on the optimization engine.
 
-    This class defines an action to send an 'echo' request to the optimization engine
-    and retrieve an echo response.
-
-    Methods:
-        action(): Execute the 'echo' action and return the echo response.
+    This class defines an action to send an 'echo' request to the optimization
+    engine and retrieve an echo response.
     """
 
-    def __init__(self, endpoint: str) -> None:
-        """
-        Initialize an EchoAction instance.
+    def __init__(
+        self,
+        endpoint: str,
+        timeout: Optional[int] = 3600,
+        ssl_verify: Optional[bool] = True,
+    ) -> None:
+        """Initializes an EchoAction instance.
 
         Args:
-            endpoint (str): The endpoint URL of the optimization engine.
+            endpoint: The endpoint URL of the optimization engine.
+            timeout: The timeout for the request in seconds.
+            ssl_verify: Whether to verify SSL certificates.
         """
-        super().__init__(endpoint, "echo", "ECHO")
+        super().__init__(
+            endpoint, "echo", "ECHO", timeout=timeout, ssl_verify=ssl_verify
+        )
 
-    def action(self) -> EchoResponse:
-        """
-        Execute the 'echo' action on the optimization engine and return the echo response.
+    def action(self) -> Optional[EchoResponse]:
+        """Executes the 'echo' action on the optimization engine.
 
         Returns:
-            EchoResponse: The echo response from the optimization engine.
+            The echo response from the optimization engine.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return EchoResponse(str(res.content))
 
 
 class VersionAction(AbstractAction):
-    """
-    Action class to perform a 'version' request on the optimization engine.
+    """Action class to perform a 'version' request on the optimization engine.
 
-    This class defines an action to request the version information of the optimization engine.
-
-    Methods:
-        action(): Execute the 'version' action and return the version response.
+    This class defines an action to request the version information of the
+    optimization engine.
     """
 
-    def __init__(self, endpoint: str) -> None:
-        """
-        Initialize a VersionAction instance.
+    def __init__(
+        self,
+        endpoint: str,
+        timeout: Optional[int] = 3600,
+        ssl_verify: Optional[bool] = True,
+    ) -> None:
+        """Initializes a VersionAction instance.
 
         Args:
-            endpoint (str): The endpoint URL of the optimization engine.
+            endpoint: The endpoint URL of the optimization engine.
+            timeout: The timeout for the request in seconds.
+            ssl_verify: Whether to verify SSL certificates.
         """
-        super().__init__(endpoint, "version")
+        super().__init__(endpoint, "version", timeout=timeout, ssl_verify=ssl_verify)
 
-    def action(self) -> VersionResponse:
-        """
-        Execute the 'version' action on the optimization engine and return the version response.
+    def action(self) -> Optional[VersionResponse]:
+        """Executes the 'version' action on the optimization engine.
 
         Returns:
-            VersionResponse: The version response from the optimization engine.
+            The version response from the optimization engine.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return VersionResponse(res.json())
 
 
 class ResetAction(AbstractAction):
-    """
-    Action class to perform a 'reset' request on the optimization engine.
+    """Action class to perform a 'reset' request on the optimization engine.
 
-    This class defines an action to request the version information of the optimization engine.
-
-    Methods:
-        action(): Execute the 'reset' action and return the version response.
+    This class defines an action to reset the optimization engine.
     """
 
     def __init__(self, endpoint: str) -> None:
-        """
-        Initialize a ResetAction instance.
+        """Initializes a ResetAction instance.
 
         Args:
-            endpoint (str): The endpoint URL of the optimization engine.
+            endpoint: The endpoint URL of the optimization engine.
         """
         super().__init__(endpoint, "reset")
 
-    def action(self) -> StatusResponse:
-        """
-        Execute the 'reset' action on the optimization engine and return the status response.
+    def action(self) -> Optional[StatusResponse]:
+        """Executes the 'reset' action on the optimization engine.
 
         Returns:
-            StatusResponse: The status response from the optimization engine.
+            The status response from the optimization engine.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return StatusResponse(res.json())
 
 
 class StopAction(AbstractAction):
-    """
-    Action class to perform a 'stop' request on the optimization engine.
+    """Action class to perform a 'stop' request on the optimization engine.
 
-    This class defines an action to request the version information of the optimization engine.
-
-    Methods:
-        action(): Execute the 'stop' action and return the version response.
+    This class defines an action to stop the optimization engine.
     """
 
     def __init__(self, endpoint: str) -> None:
-        """
-        Initialize a StopAction instance.
+        """Initializes a StopAction instance.
 
         Args:
-            endpoint (str): The endpoint URL of the optimization engine.
+            endpoint: The endpoint URL of the optimization engine.
         """
         super().__init__(endpoint, "stop")
 
-    def action(self) -> AbstractResponse:
-        """
-        Execute the 'stop' action on the optimization engine and return the status response.
+    def action(self) -> Optional[StatusResponse]:
+        """Executes the 'stop' action on the optimization engine.
 
         Returns:
-            StatusResponse: The status response from the optimization engine.
+            The status response from the optimization engine.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return StatusResponse(res.json())
 
 
 class StatusAction(AbstractAction):
-    """
-    Action class to perform a 'status' request on the optimization engine.
+    """Action class to perform a 'status' request on the optimization engine.
 
-    This class defines an action to request the version information of the optimization engine.
-
-    Methods:
-        action(): Execute the 'status' action and return the version response.
+    This class defines an action to request the status of the optimization
+    engine.
     """
 
     def __init__(self, endpoint: str) -> None:
-        """
-        Initialize a StatusAction instance.
+        """Initializes a StatusAction instance.
 
         Args:
-            endpoint (str): The endpoint URL of the optimization engine.
+            endpoint: The endpoint URL of the optimization engine.
         """
         super().__init__(endpoint, "status")
 
-    def action(self) -> StatusResponse:
-        """
-        Execute the 'status' action on the optimization engine and return the status response.
+    def action(self) -> Optional[StatusResponse]:
+        """Executes the 'status' action on the optimization engine.
 
         Returns:
-            StatusResponse: The status response from the optimization engine.
+            The status response from the optimization engine.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return StatusResponse(res.json())
 
 
 class ModelAction(AbstractAction):
-    """
-    Action class to perform a 'model' request on the optimization engine.
+    """Action class to perform a 'model' request on the optimization engine.
 
-    This class defines an action to request the version information of the optimization engine.
-
-    Methods:
-        action(): Execute the 'model' action and return the status response.
+    This class defines an action to submit a model to the optimization engine.
     """
 
     def __init__(self, endpoint: str, model: Modeller) -> None:
-        """
-        Initialize a ModelAction instance.
+        """Initializes a ModelAction instance.
 
         Args:
-            endpoint (str): The endpoint URL of the optimization engine.
+            endpoint: The endpoint URL of the optimization engine.
+            model: The model to be submitted.
         """
-        super().__init__(endpoint, "model", json.dumps(model.to_json()))
+        super().__init__(endpoint, "model", model.to_json())
 
-    def action(self) -> StatusResponse:
-        """
-        Execute the 'model' action on the optimization engine and return the StatusResponse
-        response.
+    def action(self) -> Optional[StatusResponse]:
+        """Executes the 'model' action on the optimization engine.
 
         Returns:
-            StatusResponse: The response from the optimization engine.
+            The status response from the optimization engine.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return StatusResponse(res.json())
 
 
 class DirectModelAction(AbstractAction):
-    """
-    Action class to perform a 'model' request on the optimization engine. This class
-    perfoms the exact same action as ModelAction, but expects a solution object to be
-    returned instead of the status.
+    """Action class to submit a model and get a solution back directly.
 
-    This class defines an action to request the version information of the optimization engine.
-
-    Methods:
-        action(): Execute the 'model' action and return the solution response.
+    This class is similar to `ModelAction`, but it is designed to work with
+    endpoints that directly return a solution instead of a status.
     """
 
-    def __init__(self, endpoint: str, model: Modeller) -> None:
-        """
-        Initialize a ModelAction instance.
+    def __init__(
+        self,
+        endpoint: str,
+        model: Modeller,
+        timeout: Optional[int] = 3600,
+        ssl_verify: Optional[bool] = True,
+    ) -> None:
+        """Initializes a DirectModelAction instance.
 
         Args:
-            endpoint (str): The endpoint URL of the optimization engine.
+            endpoint: The endpoint URL of the optimization engine.
+            model: The model to be submitted.
+            timeout: The timeout for the request in seconds.
+            ssl_verify: Whether to verify SSL certificates.
         """
-        super().__init__(endpoint, "model", json.dumps(model.to_json()))
+        super().__init__(
+            endpoint=endpoint,
+            command="model",
+            body=model.to_json(),
+            timeout=timeout,
+            ssl_verify=ssl_verify,
+        )
 
-    def action(self) -> SolutionResponse:
-        """
-        Execute the 'model' action on the optimization engine and return the ModelJSon response.
+        self.body = model.to_json()
+
+    def action(self) -> Optional[SolutionResponse]:
+        """Executes the 'model' action and returns a solution response.
 
         Returns:
-            SolutionResponse: The response from the optimization engine.
+            The solution response from the optimization engine.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return SolutionResponse(res.json())
 
 
 class CurrentModelAction(AbstractAction):
-    """
-    Action class to perform a 'current' request on the optimization engine.
+    """Action class to request the current model from the optimization engine.
 
-    This class defines an action to request the version information of the optimization engine.
-
-    Methods:
-        action(): Execute the 'current' action and return the version response.
+    This class defines an action to request the current model from the
+    optimization engine.
     """
 
     def __init__(self, endpoint: str) -> None:
-        """
-        Initialize a CurrentModelnAction instance.
+        """Initializes a CurrentModelAction instance.
 
         Args:
-            endpoint (str): The endpoint URL of the optimization engine.
+            endpoint: The endpoint URL of the optimization engine.
         """
         super().__init__(endpoint, "current")
 
-    def action(self) -> ModelJSonResponse:
-        """
-        Execute the 'current' action on the optimization engine and return
-        the current model response.
+    def action(self) -> Optional[ModelJSonResponse]:
+        """Executes the 'current' action on the optimization engine.
 
         Returns:
-            ModelJSonResponse: The current model from the optimization engine.
+            The current model response from the optimization engine.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return ModelJSonResponse(res.json())
 
 
 class SolutionAction(AbstractAction):
-    """
-    Action class to perform a 'result' request on the optimization engine.
+    """Action class to request the solution from the optimization engine.
 
-    This class defines an action to request the version information of the optimization engine.
-
-    Methods:
-        action(): Execute the 'result' action and return the version response.
+    This class defines an action to request the solution from the optimization
+    engine.
     """
 
     def __init__(self, endpoint: str) -> None:
-        """
-        Initialize a SolutionAction instance.
+        """Initializes a SolutionAction instance.
 
         Args:
-            endpoint (str): The endpoint URL of the optimization engine.
+            endpoint: The endpoint URL of the optimization engine.
         """
         super().__init__(endpoint, "result")
 
-    def action(self) -> SolutionResponse:
-        """
-        Execute the 'result' action on the optimization engine and return the solution response.
+    def action(self) -> Optional[SolutionResponse]:
+        """Executes the 'result' action on the optimization engine.
 
         Returns:
-            EchoResponse: The solution response from the optimization engine.
+            The solution response from the optimization engine.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return SolutionResponse(res.json())
 
 
 class Engine:
-    """
-    Class representing the optimization engine and providing methods to interact with it.
+    """Represents the optimization engine and provides methods for interaction.
 
-    This class serves as an interface for interacting with the optimization engine. It provides
-    methods to perform various actions such as requesting version information, submitting a model,
-    retrieving solutions, and more.
+    This class serves as an interface for interacting with the optimization engine.
+    It provides methods to perform various actions such as requesting version
+    information, submitting a model, retrieving solutions, and more.
 
-    Methods:
-        echo(): Send an 'echo' request to the engine and retrieve the echo response.
-        version(): Request the version information of the engine.
-        reset(): Reset the engine's state.
-        stop(): Stop the engine.
-        status(): Check the status of the engine.
-        model(model: Modeller): Submit a model to the engine for optimization.
-        current_model(): Retrieve the current model from the engine.
-        solution(): Retrieve the solution from the engine.
+    Attributes:
+        endpoint (str): The endpoint URL of the optimization engine.
     """
 
     def __init__(self, endpoint: str) -> None:
-        """
-        Initialize an Engine instance.
+        """Initializes an Engine instance.
 
         Args:
-            endpoint (str): The endpoint URL of the optimization engine.
+            endpoint: The endpoint URL of the optimization engine.
         """
         self.endpoint = endpoint
 
-    def echo(self):
-        """
-        Send an 'echo' request to the engine and retrieve the echo response.
+    def echo(self) -> Optional[EchoResponse]:
+        """Sends an 'echo' request to the engine.
 
         Returns:
-            EchoResponse: The echo response from the optimization engine.
+            The echo response from the optimization engine.
         """
-        return EchoAction(self.endpoint).action()
 
-    def version(self):
-        """
-        Request the version information of the engine.
+    def version(self) -> Optional[VersionResponse]:
+        """Requests the version information of the engine.
 
         Returns:
-            VersionResponse: The version response from the optimization engine.
+            The version response from the optimization engine.
         """
         return VersionAction(self.endpoint).action()
 
-    def reset(self):
-        """
-        Reset the engine's state.
+    def reset(self) -> Optional[StatusResponse]:
+        """Resets the engine's state.
 
         Returns:
-            StatusResponse: The status response from the optimization engine.
+            The status response from the optimization engine.
         """
         return ResetAction(self.endpoint).action()
 
-    def stop(self):
-        """
-        Stop the engine.
+    def stop(self) -> Optional[StatusResponse]:
+        """Stops the engine.
 
         Returns:
-            StatusResponse: The status response from the optimization engine.
+            The status response from the optimization engine.
         """
         return StopAction(self.endpoint).action()
 
-    def status(self):
-        """
-        Check the status of the engine.
+    def status(self) -> Optional[StatusResponse]:
+        """Checks the status of the engine.
 
         Returns:
-            StatusResponse: The status response from the optimization engine.
+            The status response from the optimization engine.
         """
         return StatusAction(self.endpoint).action()
 
-    def model(self, model: Modeller):
-        """
-        Submit a model to the engine for optimization.
+    def model(self, model: Modeller) -> Optional[StatusResponse]:
+        """Submits a model to the engine for optimization.
 
         Args:
-            model (Modeller): The model to be submitted.
+            model: The model to be submitted.
 
         Returns:
-            ModelJSonResponse: The model submission response from the optimization engine.
+            The model submission response from the optimization engine.
         """
         return ModelAction(self.endpoint, model).action()
 
-    def current_model(self):
-        """
-        Retrieve the current model from the engine.
+    def current_model(self) -> Optional[ModelJSonResponse]:
+        """Retrieves the current model from the engine.
 
         Returns:
-            ModelJSonResponse: The current model response from the optimization engine.
+            The current model response from the optimization engine.
         """
         return CurrentModelAction(self.endpoint).action()
 
-    def solution(self):
-        """
-        Retrieve the solution from the engine.
+    def solution(self) -> Optional[SolutionResponse]:
+        """Retrieves the solution from the engine.
 
         Returns:
-            SolutionResponse: The solution response from the optimization engine.
+            The solution response from the optimization engine.
         """
         return SolutionAction(self.endpoint).action()
 
 
 class DirectEngine:
-    """
-    Class representing the Cloud optimization engine demonstration endpoint and providing
-    methods to interact with it.
+    """Represents the Cloud optimization engine and provides methods for interaction.
 
-    This Cloud optimization engine is design to handle small modellings and to directly send
-    the solution back once a model is submitted.
+    This engine is designed for demonstration purposes and handles small models
+    by directly returning a solution upon model submission.
 
-    Methods:
-        echo(): Send an 'echo' request to the engine and retrieve the echo response.
-        version(): Request the version information of the engine.
-        model(model: Modeller): Submit a model to the engine for optimization and
-        receive the solution, if any.
+    Attributes:
+        endpoint (str): The endpoint URL of the optimization engine.
+        timeout (Optional[int]): The timeout for the request in seconds.
+        ssl_verify (Optional[bool]): Whether to verify SSL certificates.
     """
 
-    def __init__(self) -> None:
-        """
-        Initialize an DirectEngine instance.
+    def __init__(
+        self,
+        endpoint: str = DIRECTENGINE_API_ENDPOINT,
+        timeout: Optional[int] = 3600,
+        ssl_verify: Optional[bool] = True,
+    ) -> None:
+        """Initializes a DirectEngine instance.
 
         Args:
-            endpoint (str): The endpoint URL of the optimization engine.
+            endpoint: The endpoint URL of the optimization engine.
+            timeout: The timeout for the request in seconds.
+            ssl_verify: Whether to verify SSL certificates.
         """
-        self.endpoint = DIRECTENGINE_API_ENDPOINT
+        self.endpoint = endpoint
+        self.timeout = timeout
+        self.ssl_verify = ssl_verify
 
     def echo(self):
         """
         Send an 'echo' request to the engine and retrieve the echo response.
 
+        Note:
+            only the 4 firsts characters are sent back.
+
         Returns:
             EchoResponse: The echo response from the optimization engine.
         """
-        return EchoAction(self.endpoint).action()
+        return EchoAction(
+            self.endpoint, timeout=self.timeout, ssl_verify=self.ssl_verify
+        ).action()
 
     def version(self):
         """
@@ -613,7 +639,9 @@ class DirectEngine:
         Returns:
             VersionResponse: The version response from the optimization engine.
         """
-        return VersionAction(self.endpoint).action()
+        return VersionAction(
+            self.endpoint, timeout=self.timeout, ssl_verify=self.ssl_verify
+        ).action()
 
     def model(self, model: Modeller):
         """
@@ -623,9 +651,14 @@ class DirectEngine:
             model (Modeller): The model to be submitted.
 
         Returns:
-            ModelJSonResponse: The model submission response from the optimization engine.
+            SolutionResponse: The model submission response from the optimization engine.
         """
-        return DirectModelAction(self.endpoint, model).action()
+        return DirectModelAction(
+            endpoint=self.endpoint,
+            model=model,
+            timeout=self.timeout,
+            ssl_verify=self.ssl_verify,
+        ).action()
 
 
 ###
@@ -638,9 +671,7 @@ class DirectEngine:
 ###
 
 
-class CurrentExplainAction(
-    AbstractAction
-):  # pylint: disable=too-many-instance-attributes, too-few-public-methods
+class CurrentExplainAction(AbstractAction):
     """
     Represents an action to retrieve the current explanation.
     """
@@ -648,37 +679,37 @@ class CurrentExplainAction(
     def __init__(self, endpoint: str) -> None:
         super().__init__(endpoint=endpoint, command="explain")
 
-    def action(self) -> ExplanationResponse:
+    def action(self) -> Optional[ExplanationResponse]:
         """
         Execute the action and returns a response.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
 
         ret = self.execute()
 
-        if ret is None:
-            return None
-
         return ExplanationResponse(json.loads(str(ret.content)))
 
 
-class ExplainAction(AbstractAction):  # pylint: disable=too-few-public-methods
+class ExplainAction(AbstractAction):
     """
     Represents an action to request an explanation for a model.
     """
 
     def __init__(self, endpoint: str, model: Modeller) -> None:
-        super().__init__(
-            endpoint=endpoint, command="explain", body=str(model.to_json())
-        )
+        super().__init__(endpoint=endpoint, command="explain", body=model.to_json())
 
-    def action(self) -> ExplanationResponse:
+    def action(self) -> Optional[ExplanationResponse]:
         """
         Execute the action and returns a response.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return ExplanationResponse(res.json())
 
@@ -691,14 +722,15 @@ class CleanAction(AbstractAction):
     def __init__(self, endpoint: str) -> None:
         super().__init__(endpoint=endpoint, command="clean")
 
-    def action(self) -> StatusResponse:
+    def action(self) -> Optional[StatusResponse]:
         """
         Execute the action and returns a response.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return StatusResponse(res.json())
 
@@ -711,18 +743,20 @@ class ClusterStatusAction(AbstractAction):
     def __init__(self, endpoint: str) -> None:
         super().__init__(endpoint=endpoint, command="healthcheck")
 
-    def action(self) -> AbstractResponse:
+    def action(self) -> Optional[ClusterStatusResponse]:
         """
         Execute the action and returns a response.
-        """
 
-    def get_status(self) -> ClusterStatusResponse:
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
-        Execute the status request and returns a response.
-        """
+        res = self.execute()
+
+        return ClusterStatusResponse(res.json())
 
 
-class RemoveNodeAction(AbstractAction):  # pylint: disable=too-few-public-methods
+class RemoveNodeAction(AbstractAction):
     """
     Represents an action to remove a node from the cluster.
     """
@@ -731,22 +765,23 @@ class RemoveNodeAction(AbstractAction):  # pylint: disable=too-few-public-method
         super().__init__(
             endpoint=endpoint,
             command="remove",
-            body=json.dumps({"identifier": identifier}),
+            body={"identifier": identifier},
         )
 
-    def action(self) -> StatusResponse:
+    def action(self) -> Optional[StatusResponse]:
         """
         Execute the action and returns a response.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return StatusResponse(res.json())
 
 
-class EnableNodeAction(AbstractAction):  # pylint: disable=too-few-public-methods
+class EnableNodeAction(AbstractAction):
     """
     Represents an action to enable a disabled node in the cluster.
     """
@@ -755,22 +790,23 @@ class EnableNodeAction(AbstractAction):  # pylint: disable=too-few-public-method
         super().__init__(
             endpoint=endpoint,
             command="enable",
-            body=json.dumps({"identifier": identifier}),
+            body={"identifier": identifier},
         )
 
-    def action(self) -> StatusResponse:
+    def action(self) -> Optional[StatusResponse]:
         """
         Execute the action and returns a response.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return StatusResponse(res.json())
 
 
-class DisableNodeAction(AbstractAction):  # pylint: disable=too-few-public-methods
+class DisableNodeAction(AbstractAction):
     """
     Represents an action to disable a node in the cluster.
     """
@@ -779,17 +815,18 @@ class DisableNodeAction(AbstractAction):  # pylint: disable=too-few-public-metho
         super().__init__(
             endpoint=endpoint,
             command="disable",
-            body=json.dumps({"identifier": identifier}),
+            body={"identifier": identifier},
         )
 
-    def action(self) -> StatusResponse:
+    def action(self) -> Optional[StatusResponse]:
         """
         Execute the action and returns a response.
+
+        Raises:
+            requests.HTTPError: If an HTTP error occurs.
+            requests.RequestException: For network-related issues.
         """
         res = self.execute()
-
-        if res is None:
-            return None
 
         return StatusResponse(res.json())
 
@@ -811,6 +848,15 @@ class ClusterEngine(Engine):
         enable_node(identifier: str): Enable a disabled node in the cluster by its identifier.
         disable_node(identifier: str): Disable a node in the cluster by its identifier.
     """
+
+    def __init__(self, endpoint: str) -> None:
+        """
+        Initialize a ClusterEngine instance.
+
+        Args:
+            endpoint (str): The endpoint URL of the optimization engine.
+        """
+        super().__init__(endpoint=endpoint)
 
     def explain_current(self):
         """
@@ -851,7 +897,7 @@ class ClusterEngine(Engine):
         """
         return ClusterStatusAction(self.endpoint).action()
 
-    def remove_node(self, identifier: str):
+    def remove_node(self, identifier: str) -> Optional[StatusResponse]:
         """
         Remove a node from the cluster by its identifier.
 
@@ -861,9 +907,9 @@ class ClusterEngine(Engine):
         Returns:
             StatusResponse: The response indicating the success of the node removal.
         """
-        return RemoveNodeAction(self, identifier).action
+        return RemoveNodeAction(endpoint=self.endpoint, identifier=identifier).action()
 
-    def disable_node(self, identifier: str):
+    def disable_node(self, identifier: str) -> Optional[StatusResponse]:
         """
         Disable a node in the cluster by its identifier.
 
@@ -873,9 +919,9 @@ class ClusterEngine(Engine):
         Returns:
             StatusResponse: The response indicating the success of disabling the node.
         """
-        return DisableNodeAction(self, identifier).action
+        return DisableNodeAction(endpoint=self.endpoint, identifier=identifier).action()
 
-    def enable_node(self, identifier: str):
+    def enable_node(self, identifier: str) -> Optional[StatusResponse]:
         """
         Enable a disabled node in the cluster by its identifier.
 
@@ -885,4 +931,4 @@ class ClusterEngine(Engine):
         Returns:
             StatusResponse: The response indicating the success of enabling the node.
         """
-        return EnableNodeAction(self, identifier).action
+        return EnableNodeAction(endpoint=self.endpoint, identifier=identifier).action()

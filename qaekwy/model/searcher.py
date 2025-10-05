@@ -7,6 +7,7 @@ Enums:
     SearcherType: Represents different types of search algorithms.
 
 """
+
 from enum import Enum
 
 
@@ -35,3 +36,16 @@ class SearcherType(Enum):
     LDS = "LDS"
     PBS = "PBS"
     RBS = "RBS"
+
+    @staticmethod
+    def from_json(json_data: str) -> "SearcherType":
+        """
+        Creates a SearcherType instance from a string.
+
+        Args:
+            json_data (str): The string representation of the searcher type.
+
+        Returns:
+            SearcherType: An instance of the SearcherType enum.
+        """
+        return SearcherType(json_data)

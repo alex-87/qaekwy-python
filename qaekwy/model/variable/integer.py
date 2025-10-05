@@ -9,7 +9,8 @@ Classes:
 
 """
 
-from typing import Optional
+from typing import List, Optional
+
 from qaekwy.model.variable.branch import (
     BranchIntegerVal,
     BranchIntegerVar,
@@ -18,13 +19,14 @@ from qaekwy.model.variable.branch import (
 )
 from qaekwy.model.variable.variable import (
     ArrayVariable,
+    Expression,
     ExpressionVariable,
     Variable,
     VariableType,
 )
 
 
-class IntegerVariable(Variable):  # pylint: disable=too-few-public-methods
+class IntegerVariable(Variable):
     """
     Represents an integer variable.
 
@@ -34,21 +36,23 @@ class IntegerVariable(Variable):  # pylint: disable=too-few-public-methods
         var_name (str): The name of the variable.
         domain_low (int, optional): The lower bound of the variable's domain.
         domain_high (int, optional): The upper bound of the variable's domain.
-        specific_domain (list, optional): A specific domain for the variable.
+        specific_domain (List[int], optional): A specific domain for the variable.
         branch_val (BranchVal, optional): The brancher value strategy.
+        branch_order (int, optional): The branching order.
 
     Example:
         my_integer_var =
             IntegerVariable("x", domain_low=1, domain_high=10, branch_val=BranchIntegerVal.VAL_RND)
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         var_name: str,
         domain_low: Optional[int] = None,
         domain_high: Optional[int] = None,
-        specific_domain: Optional[list] = None,
+        specific_domain: Optional[List[int]] = None,
         branch_val: BranchVal = BranchIntegerVal.VAL_RND,
+        branch_order: Optional[int] = -1,
     ) -> None:
         super().__init__(
             var_name=var_name,
@@ -57,12 +61,23 @@ class IntegerVariable(Variable):  # pylint: disable=too-few-public-methods
             specific_domain=specific_domain,
             var_type=VariableType.INTEGER,
             branch_val=branch_val,
+            branch_order=branch_order,
+        )
+
+    @staticmethod
+    def from_json(json_data: dict) -> "IntegerVariable":
+        branch_val = BranchIntegerVal.from_json(json_data["brancher_value"])
+        return IntegerVariable(
+            var_name=json_data["name"],
+            domain_low=json_data.get("domlow"),
+            domain_high=json_data.get("domup"),
+            specific_domain=json_data.get("specific_domain"),
+            branch_val=branch_val,
+            branch_order=json_data.get("branching_order", -1),
         )
 
 
-class IntegerExpressionVariable(
-    ExpressionVariable
-):  # pylint: disable=too-few-public-methods
+class IntegerExpressionVariable(ExpressionVariable):
     """
     Represents an integer variable defined by an expression.
 
@@ -73,6 +88,7 @@ class IntegerExpressionVariable(
         var_name (str): The name of the variable.
         expression: The expression defining the variable.
         branch_val (BranchVal, optional): The brancher value strategy.
+        branch_order (int, optional): The branching order.
 
     Example:
         expr = Expression("3 * x + 2")
@@ -85,8 +101,22 @@ class IntegerExpressionVariable(
         var_name: str,
         expression: str,
         branch_val: BranchVal = BranchIntegerVal.VAL_RND,
+        branch_order: Optional[int] = -1,
     ) -> None:
-        super().__init__(var_name, expression, VariableType.INTEGER, branch_val)
+        super().__init__(
+            var_name, expression, VariableType.INTEGER, branch_val, branch_order
+        )
+
+    @staticmethod
+    def from_json(json_data: dict) -> "IntegerExpressionVariable":
+        branch_val = BranchIntegerVal.from_json(json_data["brancher_value"])
+        expression = Expression(json_data["expr"])
+        return IntegerExpressionVariable(
+            var_name=json_data["name"],
+            expression=expression.expr,
+            branch_val=branch_val,
+            branch_order=json_data.get("branching_order", -1),
+        )
 
 
 class IntegerVariableArray(ArrayVariable):
@@ -100,24 +130,26 @@ class IntegerVariableArray(ArrayVariable):
         length (int): The length of the array.
         domain_low (int, optional): The lower bound of the variables' domain.
         domain_high (int, optional): The upper bound of the variables' domain.
-        specific_domain (list, optional): A specific domain for the variables.
+        specific_domain (List[int], optional): A specific domain for the variables.
         branch_var (BranchVar, optional): The brancher variable strategy.
         branch_val (BranchVal, optional): The brancher value strategy.
+        branch_order (int, optional): The branching order.
 
     Example:
         my_integer_array = IntegerVariableArray("arr", length=5, domain_low=0, domain_high=100,
                                                 branch_var=BranchIntegerVar.VAR_MAX)
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         var_name: str,
         length: int,
         domain_low: Optional[int] = None,
         domain_high: Optional[int] = None,
-        specific_domain: Optional[list] = None,
+        specific_domain: Optional[List[int]] = None,
         branch_var: BranchVar = BranchIntegerVar.VAR_RND,
         branch_val: BranchVal = BranchIntegerVal.VAL_RND,
+        branch_order: Optional[int] = -1,
     ) -> None:
         super().__init__(
             var_name=var_name,
@@ -128,4 +160,20 @@ class IntegerVariableArray(ArrayVariable):
             specific_domain=specific_domain,
             branch_var=branch_var,
             branch_val=branch_val,
+            branch_order=branch_order,
+        )
+
+    @staticmethod
+    def from_json(json_data: dict) -> "IntegerVariableArray":
+        branch_var = BranchIntegerVar.from_json(json_data["brancher_variable"])
+        branch_val = BranchIntegerVal.from_json(json_data["brancher_value"])
+        return IntegerVariableArray(
+            var_name=json_data["name"],
+            length=json_data["length"],
+            domain_low=json_data.get("domlow"),
+            domain_high=json_data.get("domup"),
+            specific_domain=json_data.get("specific_domain"),
+            branch_var=branch_var,
+            branch_val=branch_val,
+            branch_order=json_data.get("branching_order", -1),
         )

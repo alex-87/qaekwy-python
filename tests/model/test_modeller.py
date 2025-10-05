@@ -8,21 +8,24 @@ from qaekwy.model.searcher import SearcherType
 from qaekwy.model.cutoff import CutoffFibonacci
 from qaekwy.model.variable.integer import IntegerVariable
 
+
 class TestModeller(unittest.TestCase):
 
     def setUp(self):
         self.modeller = Modeller()
         self.var1 = IntegerVariable("var1", 0, 10)
         self.var2 = IntegerVariable("var2", 0, 10)
-        self.constraint = ConstraintAbs(var_1=self.var1, var_2=self.var2, constraint_name="abs")
+        self.constraint = ConstraintAbs(
+            var_1=self.var1, var_2=self.var2, constraint_name="abs"
+        )
         self.objective = SpecificMinimum(self.var1)
         self.searcher = SearcherType.DFS
         self.cutoff = CutoffFibonacci()
         self.callback_url = "https://example.com/callback"
 
     def test_add_variable(self):
-        self.modeller.add_variable(self.var1)
-        self.assertEqual(self.modeller.variable_list, [self.var1])
+        self.modeller.add_variable(self.var1).add_variable(self.var2)
+        self.assertEqual(self.modeller.variable_list, [self.var1, self.var2])
 
     def test_add_constraint(self):
         self.modeller.add_constraint(self.constraint)
@@ -45,24 +48,59 @@ class TestModeller(unittest.TestCase):
         self.assertEqual(self.modeller.callback_url, self.callback_url)
 
     def test_to_json(self):
-        self.modeller.add_variable(self.var1).add_constraint(self.constraint).add_objective(self.objective)
-        self.modeller.set_searcher(self.searcher).set_cutoff(self.cutoff).set_callback_url(self.callback_url)
+        self.modeller.add_variable(self.var1).add_variable(self.var2).add_constraint(
+            self.constraint
+        ).add_objective(self.objective)
+        self.modeller.set_searcher(self.searcher).set_cutoff(
+            self.cutoff
+        ).set_callback_url(self.callback_url)
 
         expected_json = {
-            'callback_url': 'https://example.com/callback',
-            'constraint': [
-                {'name': 'abs', 'type': 'abs', 'v1': 'var1', 'v2': 'var2'}
+            "callback_url": "https://example.com/callback",
+            "constraint": [{"name": "abs", "type": "abs", "v1": "var1", "v2": "var2"}],
+            "cutoff": {"name": "fibonacci"},
+            "searcher": "DFS",
+            "solution_limit": 1,
+            "specific": [{"type": "minimize", "var": "var1"}],
+            "var": [
+                {
+                    "brancher_value": "VAL_RND",
+                    "branching_order": -1,
+                    "domlow": 0,
+                    "domup": 10,
+                    "name": "var1",
+                    "type": "integer",
+                },
+                {
+                    "brancher_value": "VAL_RND",
+                    "branching_order": -1,
+                    "domlow": 0,
+                    "domup": 10,
+                    "name": "var2",
+                    "type": "integer",
+                },
             ],
-            'cutoff': {'name': 'fibonacci'},
-            'searcher': 'DFS',
-            'solution_limit': 1,
-            'specific': [{'type': 'minimize', 'var': 'var1'}],
-            'var': [
-                {'brancher_value': 'VAL_RND', 'domlow': 0, 'domup': 10, 'name': 'var1', 'type': 'integer'}
-            ]
         }
 
-        self.assertEqual(self.modeller.to_json(), expected_json)
+        print(
+            self.modeller.from_json(
+                self.modeller.from_json(expected_json).to_json()
+            ).to_json()
+        )
 
-if __name__ == '__main__':
+        self.assertDictEqual(
+            self.modeller.to_json(),
+            self.modeller.from_json(expected_json).to_json(),
+            self.modeller.from_json(
+                self.modeller.from_json(expected_json).to_json()
+            ).to_json(),
+        )
+
+        self.assertDictEqual(
+            self.modeller.to_json(),
+            expected_json,
+        )
+
+
+if __name__ == "__main__":
     unittest.main()

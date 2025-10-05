@@ -11,10 +11,15 @@ Classes:
     Variable: Represents a variable.
     ExpressionVariable: Represents a variable defined by an expression.
 """
+
 from enum import Enum
-from typing import Optional
+from typing import List, Optional, Union
 
 from qaekwy.model.variable.branch import (
+    BranchBooleanVal,
+    BranchBooleanVar,
+    BranchFloatVal,
+    BranchFloatVar,
     BranchIntegerVal,
     BranchIntegerVar,
     BranchVal,
@@ -49,10 +54,25 @@ class VariableType(Enum):
     BOOLEAN = "boolean"
     BOOLEAN_ARRAY = "boolean_array"
 
+    @staticmethod
+    def from_json(json_data: str) -> "VariableType":
+        """
+        Creates a VariableType instance from a JSON string.
+        """
+        return VariableType(json_data)
 
-class Expression:  # pylint: disable=missing-class-docstring
+
+class Expression:
+    """
+    Expression class represents an expression used for constructing expressions
+    that involve variables, arithmetic operations, and logical operations.
+    """
+
     def __init__(self, expr):
         self.expr = expr
+
+    def __abs__(self):
+        return Expression(f"abs({self.expr})")
 
     def __add__(self, expr):
         return Expression(f"({self.expr} + {expr})")
@@ -105,8 +125,14 @@ class Expression:  # pylint: disable=missing-class-docstring
     def __xor__(self, expr):
         return Expression(f"(({self.expr}) ^ ({expr}))")
 
-    def __neg__(self):
+    def __rxor__(self, expr):
+        return Expression(f"(({expr}) ^ ({self.expr}))")
+
+    def __invert__(self):
         return Expression(f"!({self.expr})")
+
+    def __neg__(self):
+        return Expression(f"(-1) * ({self.expr})")
 
     def __lt__(self, expr):
         return Expression(f"(({self.expr}) < ({expr}))")
@@ -124,7 +150,7 @@ class Expression:  # pylint: disable=missing-class-docstring
         return str(self.expr)
 
 
-class ExpressionArray:  # pylint: disable=missing-class-docstring
+class ExpressionArray:
     """
     ExpressionArray class represents an array of expressions used for constructing expressions
     that involve arrays or table-like structures.
@@ -222,7 +248,7 @@ class ExpressionArray:  # pylint: disable=missing-class-docstring
             Expression: An Expression object representing the slice access.
         """
         return Expression(
-            f"{self.array_name}[{table_width}][{table_height}][s][{offset_x_start}][{offset_x_end}][{offset_y_start}][{offset_y_end}]"  # pylint: disable=line-too-long
+            f"{self.array_name}[{table_width}][{table_height}][s][{offset_x_start}][{offset_x_end}][{offset_y_start}][{offset_y_end}]"
         )
 
     def __getitem__(self, pos: int) -> Expression:
@@ -238,7 +264,7 @@ class ExpressionArray:  # pylint: disable=missing-class-docstring
         return Expression(f"{self.array_name}[{pos}]")
 
 
-class ArrayVariable(ExpressionArray):  # pylint: disable=too-many-instance-attributes
+class ArrayVariable(ExpressionArray):
     """
     Represents an array-type variable.
 
@@ -251,9 +277,10 @@ class ArrayVariable(ExpressionArray):  # pylint: disable=too-many-instance-attri
         var_type (VariableType, optional): The type of the array variable.
         domain_low (int, optional): The lower bound of the domain for array values.
         domain_high (int, optional): The upper bound of the domain for array values.
-        specific_domain (list, optional): A list of specific values that the array variable.
+        specific_domain (List, optional): A list of specific values that the array variable.
         branch_var (BranchVar, optional): The brancher variable strategy.
         branch_val (BranchVal, optional): The brancher value strategy.
+        branch_order (int, optional): The branching order.
 
     Example:
         my_array =
@@ -261,16 +288,17 @@ class ArrayVariable(ExpressionArray):  # pylint: disable=too-many-instance-attri
                 domain_low=0.0, domain_high=1.0)
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         var_name: str,
         length: int,
         var_type: VariableType = VariableType.INTEGER_ARRAY,
-        domain_low: Optional[int] = None,
-        domain_high: Optional[int] = None,
-        specific_domain: Optional[list] = None,
+        domain_low: Optional[Union[int, float]] = None,
+        domain_high: Optional[Union[int, float]] = None,
+        specific_domain: Optional[List] = None,
         branch_var: BranchVar = BranchIntegerVar.VAR_RND,
         branch_val: BranchVal = BranchIntegerVal.VAL_RND,
+        branch_order: Optional[int] = -1,
     ) -> None:
         super().__init__(var_name)
         self.var_name = var_name
@@ -281,7 +309,7 @@ class ArrayVariable(ExpressionArray):  # pylint: disable=too-many-instance-attri
         self.specific_domain = specific_domain
         self.branch_var = branch_var
         self.branch_val = branch_val
-        self.branching_order = None
+        self.branching_order = branch_order
 
     def set_branching_order(self, branching_order: int):
         """
@@ -312,6 +340,7 @@ class ArrayVariable(ExpressionArray):  # pylint: disable=too-many-instance-attri
             "length": self.length,
             "brancher_variable": self.branch_var.value,
             "brancher_value": self.branch_val.value,
+            "branching_order": self.branching_order,
         }
 
         if self.domain_low is not None:
@@ -325,8 +354,57 @@ class ArrayVariable(ExpressionArray):  # pylint: disable=too-many-instance-attri
 
         return data_json
 
+    @staticmethod
+    def from_json(json_data: dict) -> "ArrayVariable":
+        """
+        Creates an ArrayVariable instance from a JSON object.
 
-class Variable(Expression):  # pylint: disable=too-few-public-methods
+        Args:
+            json_data (dict): A dictionary representing the array variable.
+
+        Returns:
+            ArrayVariable: An instance of the ArrayVariable class.
+        """
+        var_type = VariableType.from_json(json_data["type"])
+
+        branch_var_enum: Union[
+            type[BranchIntegerVar], type[BranchFloatVar], type[BranchBooleanVar]
+        ] = BranchIntegerVar
+        branch_val_enum: Union[
+            type[BranchIntegerVal], type[BranchFloatVal], type[BranchBooleanVal]
+        ] = BranchIntegerVal
+
+        if var_type == VariableType.INTEGER_ARRAY:
+            branch_var_enum = BranchIntegerVar
+            branch_val_enum = BranchIntegerVal
+        elif var_type == VariableType.FLOAT_ARRAY:
+            branch_var_enum = BranchFloatVar
+            branch_val_enum = BranchFloatVal
+        elif var_type == VariableType.BOOLEAN_ARRAY:
+            branch_var_enum = BranchBooleanVar
+            branch_val_enum = BranchBooleanVal
+        else:
+            raise ValueError(f"Unsupported variable type for ArrayVariable: {var_type}")
+
+        branch_var: BranchVar = branch_var_enum.from_json(
+            json_data["brancher_variable"]
+        )
+        branch_val: BranchVal = branch_val_enum.from_json(json_data["brancher_value"])
+
+        return ArrayVariable(
+            var_name=json_data["name"],
+            length=json_data["length"],
+            var_type=var_type,
+            domain_low=json_data.get("domlow"),
+            domain_high=json_data.get("domup"),
+            specific_domain=json_data.get("specific_domain"),
+            branch_var=branch_var,
+            branch_val=branch_val,
+            branch_order=json_data.get("branching_order", -1),
+        )
+
+
+class Variable(Expression):
     """
     Represents a variable.
 
@@ -338,9 +416,10 @@ class Variable(Expression):  # pylint: disable=too-few-public-methods
         var_name (str): The name of the variable.
         domain_low (int, optional): The lower bound of the domain for variable values.
         domain_high (int, optional): The upper bound of the domain for variable values.
-        specific_domain (list, optional): A list of specific values that the variable can take.
+        specific_domain (List, optional): A list of specific values that the variable can take.
         var_type (VariableType, optional): The type of the variable.
         branch_val (BranchVal, optional): The brancher value strategy.
+        branch_order (int, optional): The branching order.
 
     Example:
         my_variable = Variable("x", domain_low=0, domain_high=10,
@@ -348,14 +427,15 @@ class Variable(Expression):  # pylint: disable=too-few-public-methods
                                branch_val=BranchIntegerVal.VAL_RND)
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         var_name: str,
-        domain_low: Optional[int] = None,
-        domain_high: Optional[int] = None,
-        specific_domain: Optional[list] = None,
+        domain_low: Optional[Union[int, float]] = None,
+        domain_high: Optional[Union[int, float]] = None,
+        specific_domain: Optional[List] = None,
         var_type: VariableType = VariableType.INTEGER,
         branch_val: BranchVal = BranchIntegerVal.VAL_RND,
+        branch_order: Optional[int] = -1,
     ) -> None:
         super().__init__(var_name)
         self.var_name = var_name
@@ -365,7 +445,7 @@ class Variable(Expression):  # pylint: disable=too-few-public-methods
         self.specific_domain = specific_domain
         self.branch_val = branch_val
         self.expression = None
-        self.branching_order = None
+        self.branching_order = branch_order
 
     def set_branching_order(self, branching_order: int):
         """
@@ -392,6 +472,7 @@ class Variable(Expression):  # pylint: disable=too-few-public-methods
             "name": self.var_name,
             "type": self.var_type.value,
             "brancher_value": self.branch_val.value,
+            "branching_order": self.branching_order,
         }
 
         if self.expression is not None:
@@ -409,8 +490,43 @@ class Variable(Expression):  # pylint: disable=too-few-public-methods
 
         return data_json
 
+    @staticmethod
+    def from_json(json_data: dict) -> "Variable":
+        """
+        Creates a Variable instance from a JSON representation.
+        """
+        if "expr" in json_data:
+            return ExpressionVariable.from_json(json_data)
 
-class ExpressionVariable(Variable):  # pylint: disable=too-few-public-methods
+        var_type = VariableType.from_json(json_data["type"])
+
+        branch_val_enum: Union[
+            type[BranchIntegerVal], type[BranchFloatVal], type[BranchBooleanVal]
+        ] = BranchIntegerVal
+
+        if var_type == VariableType.INTEGER:
+            branch_val_enum = BranchIntegerVal
+        elif var_type == VariableType.FLOAT:
+            branch_val_enum = BranchFloatVal
+        elif var_type == VariableType.BOOLEAN:
+            branch_val_enum = BranchBooleanVal
+        else:
+            raise ValueError(f"Unsupported variable type for Variable: {var_type}")
+
+        branch_val = branch_val_enum.from_json(json_data["brancher_value"])
+
+        return Variable(
+            var_name=json_data["name"],
+            var_type=var_type,
+            domain_low=json_data.get("domlow"),
+            domain_high=json_data.get("domup"),
+            specific_domain=json_data.get("specific_domain"),
+            branch_val=branch_val,
+            branch_order=json_data.get("branching_order", -1),
+        )
+
+
+class ExpressionVariable(Variable):
     """
     Represents a variable defined by an expression.
 
@@ -423,6 +539,7 @@ class ExpressionVariable(Variable):  # pylint: disable=too-few-public-methods
         expression: The expression defining the variable.
         var_type (VariableType, optional): The type of the variable.
         branch_val (BranchVal, optional): The brancher value strategy.
+        branch_order (int, optional): The branching order.
 
     Example:
         expr = Expression(3 * x + 2)
@@ -437,6 +554,41 @@ class ExpressionVariable(Variable):  # pylint: disable=too-few-public-methods
         expression,
         var_type: VariableType = VariableType.INTEGER,
         branch_val: BranchVal = BranchIntegerVal.VAL_RND,
+        branch_order: Optional[int] = -1,
     ) -> None:
-        super().__init__(var_name, None, None, None, var_type, branch_val)
+        super().__init__(var_name, None, None, None, var_type, branch_val, branch_order)
         self.expression = expression
+
+    @staticmethod
+    def from_json(json_data: dict) -> "ExpressionVariable":
+        """
+        Creates an ExpressionVariable instance from a JSON representation.
+        """
+        var_type = VariableType.from_json(json_data["type"])
+
+        branch_val_enum: Union[
+            type[BranchIntegerVal], type[BranchFloatVal], type[BranchBooleanVal]
+        ] = BranchIntegerVal
+
+        if var_type == VariableType.INTEGER:
+            branch_val_enum = BranchIntegerVal
+        elif var_type == VariableType.FLOAT:
+            branch_val_enum = BranchFloatVal
+        elif var_type == VariableType.BOOLEAN:
+            branch_val_enum = BranchBooleanVal
+        else:
+            raise ValueError(
+                f"Unsupported variable type for ExpressionVariable: {var_type}"
+            )
+
+        branch_val = branch_val_enum.from_json(json_data["brancher_value"])
+
+        expression = Expression(json_data["expr"])
+
+        return ExpressionVariable(
+            var_name=json_data["name"],
+            expression=expression,
+            var_type=var_type,
+            branch_val=branch_val,
+            branch_order=json_data.get("branching_order", -1),
+        )

@@ -1,56 +1,75 @@
-"""RelationalExpression Module
-
-This module defines the RelationalExpression class, which represents a
-constraint using a relational expression between variables and values.
-
-Classes:
-    RelationalExpression: Represents a constraint using a relational
-    expression between variables or values.
-
 """
+This module defines the RelationalExpression class.
+"""
+
 from qaekwy.model.constraint.abstract_constraint import AbstractConstraint
-from qaekwy.model.variable.variable import Expression
+from qaekwy.model.variable.variable import Expression, VariableType
 
 
 class RelationalExpression(AbstractConstraint):
-    """
-    Represents a constraint using a relational expression between variables or values.
+    """Enforces a relational expression.
 
-    This constraint enforces a relational expression that can be evaluated as True or False.
     The expression can involve variables, constants, and mathematical operators.
 
     Args:
-        expr (Expression): The relational expression to be enforced.
-        constraint_name (str, optional): A name for the constraint.
-
-    Attributes:
-        expr (Expression): The relational expression to be enforced.
-
-    Methods:
-        to_json(): Returns a JSON representation of the constraint.
+        expr: The relational expression to enforce.
+        domain: The variable type domain.
+        constraint_name: A name for the constraint.
 
     Example:
-        expression = Expression(var_1 + var_2 >= var_3 + 1)
-        relational_constraint =
-            RelationalExpression(expression, "relational_constraint")
+        >>> from qaekwy.model.variable.integer import IntegerVariable
+        >>> from qaekwy.model.constraint.relational import RelationalExpression
+        >>> x = IntegerVariable("x", 0, 10)
+        >>> y = IntegerVariable("y", 0, 10)
+        >>> constraint = RelationalExpression(x + y <= 10)
     """
 
-    def __init__(self, expr: Expression, constraint_name=None) -> None:
-        """
-        Initialize a new relational expression constraint instance.
+    def __init__(
+        self,
+        expr: Expression,
+        domain: VariableType = VariableType.INTEGER,
+        constraint_name=None,
+    ) -> None:
+        """Initializes a new relational expression constraint.
 
         Args:
-            expr (Expression): The relational expression to be enforced.
-            constraint_name (str, optional): A name for the constraint.
+            expr: The relational expression to enforce.
+            domain: The variable type domain.
+            constraint_name: A name for the constraint.
         """
         super().__init__(constraint_name)
         self.expr = expr
+        self.domain = domain
 
     def to_json(self) -> dict:
-        """
-        Convert the constraint to a JSON representation.
+        """Returns a JSON representation of the constraint."""
+        if self.domain == VariableType.BOOLEAN:
+            return {
+                "name": self.constraint_name,
+                "expr": str(self.expr),
+                "type": "rel",
+                "varset": "boolean",
+            }
+        if self.domain == VariableType.FLOAT:
+            return {
+                "name": self.constraint_name,
+                "expr": str(self.expr),
+                "type": "rel",
+                "varset": "float",
+            }
+
+        return {"name": self.constraint_name, "expr": str(self.expr), "type": "rel"}
+
+    @staticmethod
+    def from_json(json_data: dict) -> "RelationalExpression":
+        """Creates a RelationalExpression instance from a JSON object.
+
+        Args:
+            json_data: A dictionary containing constraint information.
 
         Returns:
-            dict: A dictionary containing constraint information in JSON format.
+            A RelationalExpression instance.
         """
-        return {"name": self.constraint_name, "expr": str(self.expr), "type": "rel"}
+        expr = Expression(json_data["expr"])
+        domain = VariableType[json_data.get("varset", "INTEGER").upper()]
+        return RelationalExpression(expr, domain, json_data.get("name"))

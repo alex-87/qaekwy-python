@@ -48,113 +48,145 @@ Usage:
 from abc import ABC, abstractmethod
 
 
-class Cutoff(ABC):  # pylint: disable=too-few-public-methods
-    """
-    An abstract base class representing an optimization cutoff condition.
+class Cutoff(ABC):
+    """An abstract base class for optimization cutoff conditions."""
 
-    Methods:
-        is_meta() -> bool:
-            Check if the cutoff condition is a meta-cutoff.
+    @staticmethod
+    def from_json(json_data: dict) -> "Cutoff":
+        """Creates a Cutoff instance from a JSON object.
 
-        to_json():
-            Convert the cutoff condition to a JSON representation.
+        Args:
+            json_data: A dictionary representing the cutoff.
 
-    """
+        Returns:
+            An instance of a Cutoff subclass.
+        """
+        name = json_data.get("name")
+        if name == "constant":
+            return CutoffConstant.from_json(json_data)
+        if name == "fibonacci":
+            return CutoffFibonacci.from_json(json_data)
+        if name == "geometric":
+            return CutoffGeometric.from_json(json_data)
+        if name == "luby":
+            return CutoffLuby.from_json(json_data)
+        if name == "linear":
+            return CutoffLinear.from_json(json_data)
+        if name == "random":
+            return CutoffRandom.from_json(json_data)
+        if name == "appender":
+            return MetaCutoffAppender.from_json(json_data)
+        if name == "merger":
+            return MetaCutoffMerger.from_json(json_data)
+        if name == "repeater":
+            return MetaCutoffRepeater.from_json(json_data)
+
+        raise ValueError(f"Unknown cutoff name: {name}")
 
     @abstractmethod
     def is_meta(self) -> bool:
-        """
-        Check if the cutoff condition is a meta-cutoff.
+        """Checks if the cutoff condition is a meta-cutoff.
 
         Returns:
-            bool: True if the cutoff is a meta-cutoff, False otherwise.
-
+            True if the cutoff is a meta-cutoff, False otherwise.
         """
 
     @abstractmethod
-    def to_json(self):
-        """
-        Convert the cutoff condition to a JSON representation.
+    def to_json(self) -> dict:
+        """Converts the cutoff condition to a JSON representation.
 
         Returns:
-            dict: A JSON representation of the cutoff condition.
-
+            A JSON representation of the cutoff condition.
         """
 
 
-class CutoffConstant(Cutoff):  # pylint: disable=too-few-public-methods
-    """
-    Represents a constant optimization cutoff condition.
+class CutoffConstant(Cutoff):
+    """Represents a constant optimization cutoff condition.
 
-    Methods:
-        is_meta() -> bool:
-            Check if the cutoff condition is a meta-cutoff.
+    Args:
+        constant_value: The constant value for the cutoff.
 
-        to_json():
-            Convert the cutoff condition to a JSON representation.
-
+    Example:
+        >>> cutoff = CutoffConstant(100)
     """
 
     def __init__(self, constant_value: int) -> None:
+        """
+        Initialize the CutoffConstant instance.
+
+        Args:
+            constant_value (int): The constant value for the cutoff.
+        """
         super().__init__()
         self.constant_value = constant_value
 
-    def is_meta(self) -> bool:
-        """
-        Check if the cutoff condition is a meta-cutoff.
+    def to_json(self) -> dict:
+        """Converts the cutoff condition to a JSON representation.
 
         Returns:
-            bool: False, indicating that this is not a meta-cutoff.
-
-        """
-        return False
-
-    def to_json(self):
-        """
-        Convert the cutoff condition to a JSON representation.
-
-        Returns:
-            dict: A JSON representation of the cutoff condition.
-
+            A JSON representation of the cutoff condition.
         """
         return {"name": "constant", "value": self.constant_value}
 
+    @staticmethod
+    def from_json(json_data: dict) -> "CutoffConstant":
+        """Creates a CutoffConstant instance from a JSON object.
 
-class CutoffFibonacci(Cutoff):  # pylint: disable=too-few-public-methods
-    """
-    Represents a Fibonacci optimization cutoff condition.
-
-    Methods:
-        is_meta() -> bool:
-            Check if the cutoff condition is a meta-cutoff.
-
-        to_json():
-            Convert the cutoff condition to a JSON representation.
-
-    """
-
-    def is_meta(self) -> bool:
-        """
-        Check if the cutoff condition is a meta-cutoff.
+        Args:
+            json_data: A dictionary with a "value" key.
 
         Returns:
-            bool: False, indicating that this is not a meta-cutoff.
+            An instance of the CutoffConstant class.
+        """
+        return CutoffConstant(json_data["value"])
 
+    def is_meta(self) -> bool:
+        """Checks if the cutoff condition is a meta-cutoff.
+
+        Returns:
+            False, indicating that this is not a meta-cutoff.
         """
         return False
 
-    def to_json(self):
+
+class CutoffFibonacci(Cutoff):
+    """Represents a Fibonacci optimization cutoff condition."""
+
+    def __init__(self) -> None:
+        """Initializes a new Fibonacci cutoff condition."""
+
+    def to_json(self) -> dict:
         """
         Convert the cutoff condition to a JSON representation.
 
         Returns:
             dict: A JSON representation of the cutoff condition.
-
         """
         return {"name": "fibonacci"}
 
+    @staticmethod
+    def from_json(json_data: dict) -> "CutoffFibonacci":
+        """
+        Creates a CutoffFibonacci instance from a JSON object.
 
-class CutoffGeometric(Cutoff):  # pylint: disable=too-few-public-methods
+        Args:
+            json_data (dict): An empty dictionary.
+
+        Returns:
+            CutoffFibonacci: An instance of the CutoffFibonacci class.
+        """
+        return CutoffFibonacci()
+
+    def is_meta(self) -> bool:
+        """Checks if the cutoff condition is a meta-cutoff.
+
+        Returns:
+            False, indicating that this is not a meta-cutoff.
+        """
+        return False
+
+
+class CutoffGeometric(Cutoff):
     """
     Represents a geometric progression optimization cutoff condition.
 
@@ -182,7 +214,7 @@ class CutoffGeometric(Cutoff):  # pylint: disable=too-few-public-methods
         """
         return False
 
-    def to_json(self):
+    def to_json(self) -> dict:
         """
         Convert the cutoff condition to a JSON representation.
 
@@ -192,8 +224,21 @@ class CutoffGeometric(Cutoff):  # pylint: disable=too-few-public-methods
         """
         return {"name": "geometric", "scale": self.scale, "base": self.base}
 
+    @staticmethod
+    def from_json(json_data: dict) -> "CutoffGeometric":
+        """
+        Creates a CutoffGeometric instance from a JSON object.
 
-class CutoffLuby(Cutoff):  # pylint: disable=too-few-public-methods
+        Args:
+            json_data (dict): A dictionary with "base" and "scale" keys.
+
+        Returns:
+            CutoffGeometric: An instance of the CutoffGeometric class.
+        """
+        return CutoffGeometric(base=json_data["base"], scale=json_data["scale"])
+
+
+class CutoffLuby(Cutoff):
     """
     Represents a Luby sequence optimization cutoff condition.
 
@@ -230,7 +275,7 @@ class CutoffLuby(Cutoff):  # pylint: disable=too-few-public-methods
         """
         return False
 
-    def to_json(self):
+    def to_json(self) -> dict:
         """
         Convert the cutoff condition to a JSON representation.
 
@@ -240,8 +285,21 @@ class CutoffLuby(Cutoff):  # pylint: disable=too-few-public-methods
         """
         return {"name": "luby", "scale": self.scale}
 
+    @staticmethod
+    def from_json(json_data: dict) -> "CutoffLuby":
+        """
+        Creates a CutoffLuby instance from a JSON object.
 
-class CutoffLinear(Cutoff):  # pylint: disable=too-few-public-methods
+        Args:
+            json_data (dict): A dictionary with a "scale" key.
+
+        Returns:
+            CutoffLuby: An instance of the CutoffLuby class.
+        """
+        return CutoffLuby(scale=json_data["scale"])
+
+
+class CutoffLinear(Cutoff):
     """
     Represents a linear optimization cutoff condition.
 
@@ -278,7 +336,7 @@ class CutoffLinear(Cutoff):  # pylint: disable=too-few-public-methods
         """
         return False
 
-    def to_json(self):
+    def to_json(self) -> dict:
         """
         Convert the cutoff condition to a JSON representation.
 
@@ -288,8 +346,21 @@ class CutoffLinear(Cutoff):  # pylint: disable=too-few-public-methods
         """
         return {"name": "linear", "scale": self.scale}
 
+    @staticmethod
+    def from_json(json_data: dict) -> "CutoffLinear":
+        """
+        Creates a CutoffLinear instance from a JSON object.
 
-class CutoffRandom(Cutoff):  # pylint: disable=too-few-public-methods
+        Args:
+            json_data (dict): A dictionary with a "scale" key.
+
+        Returns:
+            CutoffLinear: An instance of the CutoffLinear class.
+        """
+        return CutoffLinear(scale=json_data["scale"])
+
+
+class CutoffRandom(Cutoff):
     """
     Represents a random optimization cutoff condition.
 
@@ -332,7 +403,7 @@ class CutoffRandom(Cutoff):  # pylint: disable=too-few-public-methods
         """
         return False
 
-    def to_json(self):
+    def to_json(self) -> dict:
         """
         Convert the cutoff condition to a JSON representation.
 
@@ -348,8 +419,26 @@ class CutoffRandom(Cutoff):  # pylint: disable=too-few-public-methods
             "round": self.round_value,
         }
 
+    @staticmethod
+    def from_json(json_data: dict) -> "CutoffRandom":
+        """
+        Creates a CutoffRandom instance from a JSON object.
 
-class MetaCutoffAppender(Cutoff):  # pylint: disable=too-few-public-methods
+        Args:
+            json_data (dict): A dictionary with "seed", "min", "max", and "round" keys.
+
+        Returns:
+            CutoffRandom: An instance of the CutoffRandom class.
+        """
+        return CutoffRandom(
+            seed=json_data["seed"],
+            minimum=json_data["min"],
+            maximum=json_data["max"],
+            round_value=json_data["round"],
+        )
+
+
+class MetaCutoffAppender(Cutoff):
     """
     Represents a meta-cutoff that appends two different cutoff conditions.
 
@@ -392,7 +481,7 @@ class MetaCutoffAppender(Cutoff):  # pylint: disable=too-few-public-methods
         """
         return True
 
-    def to_json(self):
+    def to_json(self) -> dict:
         """
         Convert the cutoff condition to a JSON representation.
 
@@ -407,8 +496,27 @@ class MetaCutoffAppender(Cutoff):  # pylint: disable=too-few-public-methods
             "second_cutoff": self.second_cutoff.to_json(),
         }
 
+    @staticmethod
+    def from_json(json_data: dict) -> "MetaCutoffAppender":
+        """
+        Creates a MetaCutoffAppender instance from a JSON object.
 
-class MetaCutoffMerger(Cutoff):  # pylint: disable=too-few-public-methods
+        Args:
+            json_data (dict): A dictionary representing the meta cutoff.
+
+        Returns:
+            MetaCutoffAppender: An instance of the MetaCutoffAppender class.
+        """
+        first_cutoff = Cutoff.from_json(json_data["first_cutoff"])
+        second_cutoff = Cutoff.from_json(json_data["second_cutoff"])
+        return MetaCutoffAppender(
+            first_cutoff=first_cutoff,
+            number_from_first=json_data["number_from_first"],
+            second_cutoff=second_cutoff,
+        )
+
+
+class MetaCutoffMerger(Cutoff):
     """
     Represents a meta-cutoff that merges two different cutoff conditions.
 
@@ -450,7 +558,7 @@ class MetaCutoffMerger(Cutoff):  # pylint: disable=too-few-public-methods
         """
         return True
 
-    def to_json(self):
+    def to_json(self) -> dict:
         """
         Convert the cutoff condition to a JSON representation.
 
@@ -464,8 +572,26 @@ class MetaCutoffMerger(Cutoff):  # pylint: disable=too-few-public-methods
             "second_cutoff": self.second_cutoff.to_json(),
         }
 
+    @staticmethod
+    def from_json(json_data: dict) -> "MetaCutoffMerger":
+        """
+        Creates a MetaCutoffMerger instance from a JSON object.
 
-class MetaCutoffRepeater(Cutoff):  # pylint: disable=too-few-public-methods
+        Args:
+            json_data (dict): A dictionary representing the meta cutoff.
+
+        Returns:
+            MetaCutoffMerger: An instance of the MetaCutoffMerger class.
+        """
+        first_cutoff = Cutoff.from_json(json_data["first_cutoff"])
+        second_cutoff = Cutoff.from_json(json_data["second_cutoff"])
+        return MetaCutoffMerger(
+            first_cutoff=first_cutoff,
+            second_cutoff=second_cutoff,
+        )
+
+
+class MetaCutoffRepeater(Cutoff):
     """
     Represents a meta-cutoff that repeats a sub-cutoff condition multiple times.
 
@@ -507,7 +633,7 @@ class MetaCutoffRepeater(Cutoff):  # pylint: disable=too-few-public-methods
         """
         return True
 
-    def to_json(self):
+    def to_json(self) -> dict:
         """
         Convert the cutoff condition to a JSON representation.
 
@@ -520,3 +646,20 @@ class MetaCutoffRepeater(Cutoff):  # pylint: disable=too-few-public-methods
             "sub_cutoff": self.sub_cutoff.to_json(),
             "repeat": self.repeat,
         }
+
+    @staticmethod
+    def from_json(json_data: dict) -> "MetaCutoffRepeater":
+        """
+        Creates a MetaCutoffRepeater instance from a JSON object.
+
+        Args:
+            json_data (dict): A dictionary representing the meta cutoff.
+
+        Returns:
+            MetaCutoffRepeater: An instance of the MetaCutoffRepeater class.
+        """
+        sub_cutoff = Cutoff.from_json(json_data["sub_cutoff"])
+        return MetaCutoffRepeater(
+            sub_cutoff=sub_cutoff,
+            repeat=json_data["repeat"],
+        )

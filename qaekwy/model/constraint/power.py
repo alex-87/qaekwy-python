@@ -1,54 +1,40 @@
-"""ConstraintPower Module
-
-This module defines the ConstraintPower class, which represents a
-constraint to enforce a power relationship between three variables.
-
-Classes:
-    ConstraintPower: Represents a constraint to enforce a
-    power relationship between three variables.
-
+"""
+This module defines the ConstraintPower class.
 """
 
+from typing import List
 from qaekwy.model.constraint.abstract_constraint import AbstractConstraint
 from qaekwy.model.variable.variable import Variable
 
 
 class ConstraintPower(AbstractConstraint):
-    """
-    Represents a constraint to enforce a power relationship between three variables.
-
-    This constraint enforces that the value of var_1 raised to the power of var_2 is equal to var_3.
+    """Enforces that `var_1` ^ `var_2` = `var_3`.
 
     Args:
-        var_1 (Variable): The base variable in the power relationship.
-        var_2 (int): The exponent variable in the power relationship.
-        var_3 (Variable): The result variable of the power relationship.
-        constraint_name (str, optional): A name for the constraint.
-
-    Attributes:
-        var_1 (Variable): The base variable in the power relationship.
-        var_2 (int): The exponent variable in the power relationship.
-        var_3 (Variable): The result variable of the power relationship.
-
-    Methods:
-        to_json(): Returns a JSON representation of the constraint.
+        var_1: The base.
+        var_2: The exponent.
+        var_3: The result of the power operation.
+        constraint_name: A name for the constraint.
 
     Example:
-        power_constraint =
-            ConstraintPower(base_variable, exponent_value, result_variable, "power_constraint")
+        >>> from qaekwy.model.variable.integer import IntegerVariable
+        >>> from qaekwy.model.constraint.power import ConstraintPower
+        >>> x = IntegerVariable("x", 0, 10)
+        >>> y = 2
+        >>> z = IntegerVariable("z", 0, 100)
+        >>> constraint = ConstraintPower(x, y, z)
     """
 
     def __init__(
         self, var_1: Variable, var_2: int, var_3: Variable, constraint_name=None
     ) -> None:
-        """
-        Initialize a new power constraint instance.
+        """Initializes a new power constraint.
 
         Args:
-            var_1 (Variable): The base variable in the power relationship.
-            var_2 (int): The exponent variable in the power relationship.
-            var_3 (Variable): The result variable of the power relationship.
-            constraint_name (str, optional): A name for the constraint.
+            var_1: The base.
+            var_2: The exponent.
+            var_3: The result of the power operation.
+            constraint_name: A name for the constraint.
         """
         super().__init__(constraint_name)
         self.var_1 = var_1
@@ -56,12 +42,7 @@ class ConstraintPower(AbstractConstraint):
         self.var_3 = var_3
 
     def to_json(self) -> dict:
-        """
-        Convert the constraint to a JSON representation.
-
-        Returns:
-            dict: A dictionary containing constraint information in JSON format.
-        """
+        """Returns a JSON representation of the constraint."""
         return {
             "name": self.constraint_name,
             "v1": self.var_1.var_name,
@@ -69,3 +50,28 @@ class ConstraintPower(AbstractConstraint):
             "v3": self.var_3.var_name,
             "type": "pow",
         }
+
+    @staticmethod
+    def from_json(json_data: dict, variables: List) -> "ConstraintPower":
+        """Creates a ConstraintPower instance from a JSON object.
+
+        Args:
+            json_data: A dictionary representing the constraint.
+            variables: The list of variables in the model.
+
+        Returns:
+            An instance of the ConstraintPower class.
+        """
+        var1_name = json_data["v1"]
+        value = json_data["v2"]
+        var3_name = json_data["v3"]
+
+        var1 = next((v for v in variables if v.var_name == var1_name), None)
+        if var1 is None:
+            raise ValueError(f"Variable '{var1_name}' not found in the model.")
+
+        var3 = next((v for v in variables if v.var_name == var3_name), None)
+        if var3 is None:
+            raise ValueError(f"Variable '{var3_name}' not found in the model.")
+
+        return ConstraintPower(var1, value, var3, json_data.get("name"))

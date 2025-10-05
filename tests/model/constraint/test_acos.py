@@ -23,9 +23,16 @@ class TestConstraintACos(unittest.TestCase):
             "name": "acos_constraint",
             "v1": "var_angle",
             "v2": "var_value",
-            "type": "acos"
+            "type": "acos",
         }
-        self.assertEqual(constraint.to_json(), expected_json)
+        self.assertDictEqual(
+            constraint.to_json(),
+            constraint.from_json(
+                expected_json, [self.var_angle, self.var_value]
+            ).to_json(),
+            expected_json,
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

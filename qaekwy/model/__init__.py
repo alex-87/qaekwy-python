@@ -2,4 +2,4 @@
 Initialization Module for Model
 """
 
-DIRECTENGINE_API_ENDPOINT = "https://demo-api.qaekwy.io/"
+DIRECTENGINE_API_ENDPOINT = "https://solver.qaekwy.io/"

@@ -23,9 +23,14 @@ class TestConstraintAbs(unittest.TestCase):
             "name": "abs_constraint",
             "v1": "var1",
             "v2": "var2",
-            "type": "abs"
+            "type": "abs",
         }
-        self.assertEqual(constraint.to_json(), expected_json)
+        self.assertDictEqual(
+            constraint.to_json(),
+            constraint.from_json(expected_json, [self.var1, self.var2]).to_json(),
+            expected_json,
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
