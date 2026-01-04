@@ -2,8 +2,8 @@
 
 import unittest
 
-from qaekwy.model.variable.integer import IntegerVariable, IntegerVariableArray
-from qaekwy.model.constraint.element import ConstraintElement
+from qaekwy.core.model.variable.integer import IntegerVariable, IntegerVariableArray
+from qaekwy.core.model.constraint.element import ConstraintElement
 
 
 class TestConstraintElement(unittest.TestCase):

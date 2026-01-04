@@ -3,10 +3,10 @@
 
 import unittest
 
-from qaekwy.model.variable.variable import Expression
-from qaekwy.model.variable.integer import IntegerVariable
+from qaekwy.core.model.variable.variable import Expression
+from qaekwy.core.model.variable.integer import IntegerVariable
 
-from qaekwy.model.constraint.relational import RelationalExpression
+from qaekwy.core.model.constraint.relational import RelationalExpression
 
 
 class TestRelationalExpression(unittest.TestCase):

@@ -2,8 +2,8 @@
 
 import unittest
 
-from qaekwy.model.variable.integer import IntegerVariable
-from qaekwy.model.constraint.maximum import ConstraintMaximum
+from qaekwy.core.model.variable.integer import IntegerVariable
+from qaekwy.core.model.constraint.maximum import ConstraintMaximum
 
 
 class TestConstraintMaximum(unittest.TestCase):

@@ -1,8 +1,8 @@
 # pylint: skip-file
 
 import unittest
-from qaekwy.model.constraint.divide import ConstraintDivide
-from qaekwy.model.variable.integer import IntegerVariable
+from qaekwy.core.model.constraint.divide import ConstraintDivide
+from qaekwy.core.model.variable.integer import IntegerVariable
 
 
 class TestConstraintDivide(unittest.TestCase):

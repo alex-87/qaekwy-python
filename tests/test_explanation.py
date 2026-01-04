@@ -2,7 +2,7 @@
 
 import unittest
 
-from qaekwy.explanation import Explanation
+from qaekwy.core.explanation import Explanation
 
 
 class ExplanationTest(unittest.TestCase):

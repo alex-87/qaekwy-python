@@ -4,7 +4,7 @@ Main Module
 
 import argparse
 
-from . import (
+from qaekwy.core import (
     __author__,
     __copyright__,
     __license__,
@@ -29,6 +29,5 @@ if __name__ == "__main__":
         print(f"Licensed under the {__license__}")
         print(f"You may obtain a copy of the License at {__license_url__}")
         print(
-            "You are free to use, modify, and redistribute this work "
-            "under the terms of this licence."
+            "You are free to use, modify, and redistribute this work under the terms of this licence."
         )

@@ -2,8 +2,8 @@
 
 import unittest
 
-from qaekwy.model.variable.float import FloatVariable
-from qaekwy.model.constraint.exponential import ConstraintExponential
+from qaekwy.core.model.variable.float import FloatVariable
+from qaekwy.core.model.constraint.exponential import ConstraintExponential
 
 
 class TestConstraintExponential(unittest.TestCase):

@@ -2,10 +2,10 @@
 
 import unittest
 
-from qaekwy.model.modeller import Modeller
-from qaekwy.model.constraint.if_then_else import ConstraintIfThenElse
-from qaekwy.model.searcher import SearcherType
-from qaekwy.model.variable.integer import IntegerVariable
+from qaekwy.core.model.modeller import Modeller
+from qaekwy.core.model.constraint.if_then_else import ConstraintIfThenElse
+from qaekwy.core.model.searcher import SearcherType
+from qaekwy.core.model.variable.integer import IntegerVariable
 
 
 class TestConstraintIfThenElse(unittest.TestCase):

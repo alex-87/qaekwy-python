@@ -2,8 +2,8 @@
 
 import unittest
 
-from qaekwy.model.variable.float import FloatVariable
-from qaekwy.model.constraint.logarithm import ConstraintLogarithm
+from qaekwy.core.model.variable.float import FloatVariable
+from qaekwy.core.model.constraint.logarithm import ConstraintLogarithm
 
 
 class TestConstraintLogarithm(unittest.TestCase):

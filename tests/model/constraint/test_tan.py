@@ -2,8 +2,8 @@
 
 import unittest
 
-from qaekwy.model.variable.float import FloatVariable
-from qaekwy.model.constraint.tan import ConstraintTan
+from qaekwy.core.model.variable.float import FloatVariable
+from qaekwy.core.model.constraint.tan import ConstraintTan
 
 
 class TestConstraintTan(unittest.TestCase):

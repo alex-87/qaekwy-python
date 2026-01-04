@@ -2,8 +2,8 @@
 
 import unittest
 
-from qaekwy.model.variable.integer import IntegerVariable
-from qaekwy.model.constraint.multiply import ConstraintMultiply
+from qaekwy.core.model.variable.integer import IntegerVariable
+from qaekwy.core.model.constraint.multiply import ConstraintMultiply
 
 
 class TestConstraintMultiply(unittest.TestCase):

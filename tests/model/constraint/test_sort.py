@@ -2,8 +2,8 @@
 
 import unittest
 
-from qaekwy.model.variable.integer import IntegerVariableArray
-from qaekwy.model.constraint.sort import ConstraintSorted, ConstraintReverseSorted
+from qaekwy.core.model.variable.integer import IntegerVariableArray
+from qaekwy.core.model.constraint.sort import ConstraintSorted, ConstraintReverseSorted
 
 
 class TestConstraintSorted(unittest.TestCase):

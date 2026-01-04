@@ -2,7 +2,7 @@
 
 import unittest
 
-from qaekwy.solution import Solution
+from qaekwy.core.solution import Solution
 
 
 class SolutionTest(unittest.TestCase):

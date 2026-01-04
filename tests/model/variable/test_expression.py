@@ -1,7 +1,7 @@
 # pylint: skip-file
 
 import unittest
-from qaekwy.model.variable.variable import Expression
+from qaekwy.core.model.variable.variable import Expression
 
 
 class TestExpression(unittest.TestCase):

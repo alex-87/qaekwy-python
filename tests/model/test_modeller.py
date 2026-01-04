@@ -1,12 +1,12 @@
 # pylint: skip-file
 
 import unittest
-from qaekwy.model.constraint.abs import ConstraintAbs
-from qaekwy.model.modeller import Modeller
-from qaekwy.model.specific import SpecificMinimum
-from qaekwy.model.searcher import SearcherType
-from qaekwy.model.cutoff import CutoffFibonacci
-from qaekwy.model.variable.integer import IntegerVariable
+from qaekwy.core.model.constraint.abs import ConstraintAbs
+from qaekwy.core.model.modeller import Modeller
+from qaekwy.core.model.specific import SpecificMinimum
+from qaekwy.core.model.searcher import SearcherType
+from qaekwy.core.model.cutoff import CutoffFibonacci
+from qaekwy.core.model.variable.integer import IntegerVariable
 
 
 class TestModeller(unittest.TestCase):
@@ -59,7 +59,6 @@ class TestModeller(unittest.TestCase):
             "callback_url": "https://example.com/callback",
             "constraint": [{"name": "abs", "type": "abs", "v1": "var1", "v2": "var2"}],
             "cutoff": {"name": "fibonacci"},
-            "searcher": "DFS",
             "solution_limit": 1,
             "specific": [{"type": "minimize", "var": "var1"}],
             "var": [
@@ -84,20 +83,20 @@ class TestModeller(unittest.TestCase):
 
         print(
             self.modeller.from_json(
-                self.modeller.from_json(expected_json).to_json()
-            ).to_json()
+                self.modeller.from_json(expected_json).to_json(serialization=True)
+            ).to_json(serialization=True)
         )
 
         self.assertDictEqual(
-            self.modeller.to_json(),
-            self.modeller.from_json(expected_json).to_json(),
+            self.modeller.to_json(serialization=True),
+            self.modeller.from_json(expected_json).to_json(serialization=True),
             self.modeller.from_json(
-                self.modeller.from_json(expected_json).to_json()
-            ).to_json(),
+                self.modeller.from_json(expected_json).to_json(serialization=True)
+            ).to_json(serialization=True),
         )
 
         self.assertDictEqual(
-            self.modeller.to_json(),
+            self.modeller.to_json(serialization=True),
             expected_json,
         )
 
