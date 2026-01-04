@@ -1,8 +1,8 @@
 # pylint: skip-file
 
 import unittest
-from qaekwy.model.constraint.acos import ConstraintACos
-from qaekwy.model.variable.float import FloatVariable
+from qaekwy.core.model.constraint.acos import ConstraintACos
+from qaekwy.core.model.variable.float import FloatVariable
 
 
 class TestConstraintACos(unittest.TestCase):

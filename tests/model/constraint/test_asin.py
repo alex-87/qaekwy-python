@@ -1,8 +1,8 @@
 # pylint: skip-file
 
 import unittest
-from qaekwy.model.constraint.asin import ConstraintASin
-from qaekwy.model.variable.float import FloatVariable
+from qaekwy.core.model.constraint.asin import ConstraintASin
+from qaekwy.core.model.variable.float import FloatVariable
 
 
 class TestConstraintASin(unittest.TestCase):

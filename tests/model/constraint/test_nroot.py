@@ -2,8 +2,8 @@
 
 import unittest
 
-from qaekwy.model.variable.integer import IntegerVariable
-from qaekwy.model.constraint.nroot import ConstraintNRoot
+from qaekwy.core.model.variable.integer import IntegerVariable
+from qaekwy.core.model.constraint.nroot import ConstraintNRoot
 
 
 class TestConstraintNRoot(unittest.TestCase):

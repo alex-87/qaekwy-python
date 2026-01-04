@@ -1,8 +1,8 @@
 # pylint: skip-file
 
 import unittest
-from qaekwy.model.constraint.abs import ConstraintAbs
-from qaekwy.model.variable.integer import IntegerVariable
+from qaekwy.core.model.constraint.abs import ConstraintAbs
+from qaekwy.core.model.variable.integer import IntegerVariable
 
 
 class TestConstraintAbs(unittest.TestCase):

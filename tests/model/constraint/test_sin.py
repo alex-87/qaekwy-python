@@ -2,8 +2,8 @@
 
 import unittest
 
-from qaekwy.model.variable.float import FloatVariable
-from qaekwy.model.constraint.sin import ConstraintSin
+from qaekwy.core.model.variable.float import FloatVariable
+from qaekwy.core.model.constraint.sin import ConstraintSin
 
 
 class TestConstraintSin(unittest.TestCase):

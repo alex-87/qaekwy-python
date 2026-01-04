@@ -1,7 +1,7 @@
 # pylint: skip-file
 
 import unittest
-from qaekwy.model.constraint.member import ConstraintMember, ArrayVariable, Variable
+from qaekwy.core.model.constraint.member import ConstraintMember, ArrayVariable, Variable
 
 
 class TestConstraintMember(unittest.TestCase):

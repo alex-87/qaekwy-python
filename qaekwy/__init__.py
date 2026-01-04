@@ -1,9 +1,48 @@
-"""Qaekwy"""
+"""QAekwy API Module Initialization."""
 
-__copyright__ = "©2023–2025"
-__author__ = "Alexis LE GOADEC"
-__license__ = "EUPL-1.2"
-__license_url__ = "https://eupl.eu"
-__software__ = "Qaekwy"
-__author_email__ = "alex@qaekwy.io"
-__version__ = "0.2.0"
+from qaekwy.api.model import Model
+from qaekwy.api.exceptions import SolverError
+from qaekwy.core.model.variable.branch import (
+    BranchBooleanVal,
+    BranchBooleanVar,
+    BranchIntegerVal,
+    BranchIntegerVar,
+    BranchFloatVal,
+    BranchFloatVar,
+)
+from qaekwy.core.model.cutoff import (
+    Cutoff,
+    CutoffConstant,
+    CutoffFibonacci,
+    CutoffLinear,
+    CutoffLuby,
+    CutoffGeometric,
+    CutoffRandom,
+    MetaCutoffAppender,
+    MetaCutoffMerger,
+    MetaCutoffRepeater,
+)
+
+import qaekwy.core.model.function as math
+
+__all__ = [
+    "Model",
+    "SolverError",
+    "BranchIntegerVal",
+    "BranchIntegerVar",
+    "BranchFloatVal",
+    "BranchFloatVar",
+    "BranchBooleanVal",
+    "BranchBooleanVar",
+    "Cutoff",
+    "CutoffConstant",
+    "CutoffFibonacci",
+    "CutoffLinear",
+    "CutoffLuby",
+    "CutoffGeometric",
+    "CutoffRandom",
+    "MetaCutoffAppender",
+    "MetaCutoffMerger",
+    "MetaCutoffRepeater",
+    "math",
+]

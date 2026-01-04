@@ -2,8 +2,8 @@
 
 import unittest
 
-from qaekwy.model.variable.integer import IntegerVariable
-from qaekwy.model.constraint.power import ConstraintPower
+from qaekwy.core.model.variable.integer import IntegerVariable
+from qaekwy.core.model.constraint.power import ConstraintPower
 
 
 class TestConstraintPower(unittest.TestCase):

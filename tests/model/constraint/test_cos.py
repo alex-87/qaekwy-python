@@ -1,8 +1,8 @@
 # pylint: skip-file
 
 import unittest
-from qaekwy.model.constraint.cos import ConstraintCos
-from qaekwy.model.variable.float import FloatVariable
+from qaekwy.core.model.constraint.cos import ConstraintCos
+from qaekwy.core.model.variable.float import FloatVariable
 
 
 class TestConstraintCos(unittest.TestCase):

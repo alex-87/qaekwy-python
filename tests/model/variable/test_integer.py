@@ -2,9 +2,9 @@
 
 import unittest
 
-from qaekwy.model.variable.branch import BranchIntegerVal
-from qaekwy.model.variable.integer import IntegerVariable
-from qaekwy.model.variable.variable import Expression
+from qaekwy.core.model.variable.branch import BranchIntegerVal
+from qaekwy.core.model.variable.integer import IntegerVariable
+from qaekwy.core.model.variable.variable import Expression
 
 
 class TestExpression(unittest.TestCase):
