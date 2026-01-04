@@ -202,8 +202,6 @@ print(f"Max Value: {solution.total_value}")
 
 #### 💡 Core Concepts
 
-![Qaekwy core concept](https://qaekwy.io/q1.png)
-
 <p align="center">
   <img alt="Qaekwy core concept" src="https://qaekwy.io/q1.png" width="50%">
 </p>
