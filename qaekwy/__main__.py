@@ -4,7 +4,7 @@ Main Module
 
 import argparse
 
-from qaekwy.core import (
+from qaekwy.__metadata__ import (
     __author__,
     __copyright__,
     __license__,
