@@ -10,6 +10,12 @@ Qaekwy is a Python library designed for modeling and solving combinatorial optim
 
 It provides a clean, Pythonic interface for defining variables, constraints, and objectives, enabling a natural *define-and-solve* workflow. Qaekwy manages the interaction with the solver engine, allowing users to focus entirely on expressing the structure of their problems.
 
+Perfect for:
+
+* 🎓 **Learning**: Students can *quickly model* and solve problems.
+* 👩‍🏫 **Teaching**: Instructors can *demo core CSP concepts* with **minimal setup**.
+* 🌟 **Discovering**: Researchers can *explore* strategies, heuristics, and models.
+
 
 ## 🚀 Quick Start
 
