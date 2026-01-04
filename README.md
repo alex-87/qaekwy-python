@@ -11,20 +11,6 @@ Qaekwy is a Python library designed for modeling and solving combinatorial optim
 It provides a clean, Pythonic interface for defining variables, constraints, and objectives, enabling a natural *define-and-solve* workflow. Qaekwy manages the interaction with the solver engine, allowing users to focus entirely on expressing the structure of their problems.
 
 
-## Capabilities
-
-* **Declarative Modeling**
-Define integer, float, and boolean variables, as well as arrays and matrices, to represent problems at a high semantic level.
-* **Expressive Constraints**
-Formulate arithmetic, logical, and conditional constraints using readable and maintainable Python expressions.
-* **Optimization Objectives**
-Specify minimization and maximization goals to guide the solver toward optimal solutions.
-* **Search Configuration**
-Configure solver behavior using explicit search strategies such as Depth-First Search and Branch-and-Bound, along with branching heuristics and cutoffs.
-* **Cloud-Native Execution**
-Transparent handling of model serialization and execution on the Qaekwy Cloud Solver instance.
-
-
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -71,6 +57,21 @@ z: -3
 ```
 
 *That's it.*
+
+
+## Capabilities
+
+* **Declarative Modeling**
+Define integer, float, and boolean variables, as well as arrays and matrices, to represent problems at a high semantic level.
+* **Expressive Constraints**
+Formulate arithmetic, logical, and conditional constraints using readable and maintainable Python expressions.
+* **Optimization Objectives**
+Specify minimization and maximization goals to guide the solver toward optimal solutions.
+* **Search Configuration**
+Configure solver behavior using explicit search strategies such as Depth-First Search and Branch-and-Bound, along with branching heuristics and cutoffs.
+* **Cloud-Native Execution**
+Transparent handling of model serialization and execution on the Qaekwy Cloud Solver instance.
+
 
 ## 📚 Documentation
 
