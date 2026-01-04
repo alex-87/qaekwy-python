@@ -1,7 +1,20 @@
 """ Installation """
 
+import ast
+from pathlib import Path
 from setuptools import setup
-import qaekwy.core as core
+
+
+metadata_file = Path("qaekwy/__metadata__.py")
+
+metadata = {}
+with open(metadata_file, "r", encoding="utf-8") as f:
+    tree = ast.parse(f.read(), filename=str(metadata_file))
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and len(node.targets) == 1:
+            target = node.targets[0]
+            if isinstance(target, ast.Name) and isinstance(node.value, ast.Constant):
+                metadata[target.id] = node.value.value
 
 with open("README.md", "r", encoding="UTF-8") as fh:
     long_description = fh.read()
@@ -9,10 +22,10 @@ with open("README.md", "r", encoding="UTF-8") as fh:
 
 setup(
     name="qaekwy",
-    version=core.__version__,
-    license=core.__license__,
-    author=core.__author__,
-    author_email=core.__author_email__,
+    version=metadata["__version__"],
+    license=metadata["__license__"],
+    author=metadata["__author__"],
+    author_email=metadata["__author_email__"],
     keywords=[
         "optimization",
         "constraint programming",
