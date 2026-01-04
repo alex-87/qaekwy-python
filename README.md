@@ -204,6 +204,10 @@ print(f"Max Value: {solution.total_value}")
 
 ![Qaekwy core concept](https://qaekwy.io/q1.png)
 
+<p align="center">
+  <img alt="Qaekwy core concept" src="https://qaekwy.io/q1.png" width="50%">
+</p>
+
 ##### The Model
 
 The `qw.Model` acts as the container for your variables and constraints. It also manages the interaction with
@@ -278,7 +282,9 @@ m.constraint(sum(mat.col(0)) > arr[2])
 
 The model is then sent to the Qaekwy Cloud Engine through REST API.
 
-![Qaekwy Integration](https://qaekwy.io/q2.png)
+<p align="center">
+  <img alt="Qaekwy Integration" src="https://qaekwy.io/q2.png" width="50%">
+</p>
 
 ---
 
