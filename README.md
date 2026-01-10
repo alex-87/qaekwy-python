@@ -10,11 +10,11 @@ Qaekwy is a Python library designed for modeling and solving combinatorial optim
 
 It provides a clean, Pythonic interface for defining variables, constraints, and objectives, enabling a natural *define-and-solve* workflow. Qaekwy manages the interaction with the solver engine, allowing users to focus entirely on expressing the structure of their problems.
 
-Perfect for:
+#### Perfect for
 
-* 🎓 **Learning**: Students can *quickly model* and solve problems.
-* 👩‍🏫 **Teaching**: Instructors can *demo core CSP concepts* with **minimal setup**.
-* 🌟 **Discovering**: Researchers can *explore* strategies, heuristics, and models.
+* 🎓 **Learning** — Model real problems in minutes
+* 👩‍🏫 **Teaching** — Demonstrate CSP concepts with no setup
+* 🔬 **Research & Prototyping** — Explore models, heuristics, and ideas fast
 
 
 ## 🚀 Quick Start
@@ -26,11 +26,11 @@ Perfect for:
 
 ### Installation
 
-Install the production-ready client via PyPI:
+```shell
+pip install qaekwy
+```
 
-`pip install qaekwy`
-
-### Your First Model
+### 🌱 Your First Model
 
 ```python
 import qaekwy as qw
@@ -42,12 +42,9 @@ y = m.integer_variable("y", (-10, 10))
 z = m.integer_variable("z", (-10, 10))
 
 m.constraint(x + 2*y + 3*z <= 15)
-m.constraint(x + y >= 5)
+m.maximize(x)
 
-m.minimize(z)
-
-solution = m.solve_one()
-solution.pretty_print()
+m.solve_one().pretty_print()
 ```
 
 *Output*:
@@ -56,13 +53,11 @@ solution.pretty_print()
 ----------------------------------------
 Solution:
 ----------------------------------------
-x: 6
-y: 8
-z: -3
+x: -3
+y: 2
+z: 4
 ----------------------------------------
 ```
-
-*That's it.*
 
 
 ## Capabilities
@@ -84,11 +79,14 @@ Transparent handling of model serialization and execution on the Qaekwy Cloud So
 Visit the [Qaekwy Documentation](https://docs.qaekwy.io/) for guides, teaching resources, and detailed examples.
 
 
----
+## Examples
 
-### 🧩 Constraint Programming Example: Sudoku
+### 🔢 Constraint Programming -- Sudoku
 
-Here is a complete example solving a Sudoku grid:
+Here is a complete example solving a [Sudoku](https://en.wikipedia.org/wiki/Sudoku) grid:
+
+> The objective is to fill a 9 × 9 grid with digits so that each column, each row, and each
+> of the nine 3 × 3 subgrids that compose the grid contains all of the digits from 1 to 9.
 
 ```python
 import qaekwy as qw
@@ -108,7 +106,7 @@ my_problem = [
     [0, 2, 0,  0, 0, 0,  5, 7, 0]
 ]
 
-# Initialize the model container
+# Instantiate the model
 m = qw.Model()
 
 # Create a 9x9 matrix of integer variables
@@ -122,7 +120,7 @@ for i in range(9):
     # Ensure all variables in column 'i' are unique
     m.constraint_distinct(grid.col(i))
 
-# Iterate in steps of 3 (0, 3, 6) to find the top-left corner of each block
+# Iterate over 3x3 blocks
 for i in range(0, 9, 3):
     for j in range(0, 9, 3):
         # Extract the 3x3 block and enforce uniqueness
@@ -161,7 +159,7 @@ grid: (9 x 9 matrix)
 ----------------------------------------
 ```
 
-### 🎒 Optimization Example: Knapsack Problem
+### 🎒 Optimization -- Knapsack Problem
 
 Here is a complete example solving a basic resource allocation problem ([The Knapsack Problem](https://en.wikipedia.org/wiki/Knapsack_problem)):
 
@@ -207,18 +205,18 @@ print(f"Max Value: {solution.total_value}")
 # Output: Max Value: 9
 ```
 
-#### 💡 Core Concepts
+## 💡 Core Concepts
 
 <p align="center">
   <img alt="Qaekwy core concept" src="https://qaekwy.io/q1.png" width="50%">
 </p>
 
-##### The Model
+### The Model
 
 The `qw.Model` acts as the container for your variables and constraints. It also manages the interaction with
 the underlying solver engine.
 
-##### The Variables
+#### The Variables
 
 Here are examples of variable creation in the model:
 
@@ -230,7 +228,7 @@ capacity = m.integer_variable("capacity", domain=(0, 100))
 grid = m.integer_matrix("grid", rows=9, cols=9, domain=(1, 9))
 ```
 
-##### The Constraints
+#### The Constraints
 
 Constraints are logical assertions that must be true in any valid solution.
 
@@ -239,7 +237,7 @@ Constraints are logical assertions that must be true in any valid solution.
 m.constraint(x * 2 < qw.math.power(y, 2) + 5)
 ```
 
-#### Modeling Capabilities
+### Modeling Capabilities
 
 Qaekwy supports:
 
@@ -278,9 +276,9 @@ m.constraint(sum(mat.col(0)) > arr[2])
 
 - `solve_one()` — find one feasible or optimal solution
 - `solve()` — returns a list of solutions
-- minimize(...) / maximize(...) — Set one or more objectives on variables
+- `minimize(...)` / `maximize(...)` — Set one or more objectives on variables
 - Searchers such as DFS, Branch-and-Bound, etc.
-- Cloud-based Solver instance (please, refer to [Terms & Conditions](https://docs.qaekwy.io/docs/terms-and-conditions/))
+- Cloud-based Solver instance (*please, refer to [Terms & Conditions](https://docs.qaekwy.io/docs/terms-and-conditions/)*)
 
 
 #### Integration
@@ -291,7 +289,6 @@ The model is then sent to the Qaekwy Cloud Engine through REST API.
   <img alt="Qaekwy Integration" src="https://qaekwy.io/q2.png" width="50%">
 </p>
 
----
 
 ## License
 

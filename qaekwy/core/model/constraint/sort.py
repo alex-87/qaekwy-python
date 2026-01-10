@@ -2,8 +2,8 @@
 This module defines constraints for sorting arrays.
 """
 
-from qaekwy.core.model.constraint.abstract_constraint import AbstractConstraint
-from qaekwy.core.model.variable.variable import ArrayVariable
+from ..variable.variable import ArrayVariable
+from .abstract_constraint import AbstractConstraint
 
 
 class ConstraintSorted(AbstractConstraint):

@@ -2,8 +2,8 @@
 This module defines constraints for enforcing distinctness in arrays.
 """
 
-from qaekwy.core.model.constraint.abstract_constraint import AbstractConstraint
-from qaekwy.core.model.variable.variable import ArrayVariable, MatrixVariable
+from ..variable.variable import ArrayVariable, MatrixVariable
+from .abstract_constraint import AbstractConstraint
 
 
 class ConstraintDistinctArray(AbstractConstraint):

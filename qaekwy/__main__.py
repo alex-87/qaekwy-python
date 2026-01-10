@@ -4,14 +4,8 @@ Main Module
 
 import argparse
 
-from qaekwy.__metadata__ import (
-    __author__,
-    __copyright__,
-    __license__,
-    __license_url__,
-    __software__,
-    __version__,
-)
+from .__metadata__ import (__author__, __copyright__, __license__,
+                           __license_url__, __software__, __version__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Qaekwy Python Library")
@@ -29,5 +23,5 @@ if __name__ == "__main__":
         print(f"Licensed under the {__license__}")
         print(f"You may obtain a copy of the License at {__license_url__}")
         print(
-            "You are free to use, modify, and redistribute this work under the terms of this licence."
+            "You are free to use, modify, and redistribute this work under the terms of this license."
         )

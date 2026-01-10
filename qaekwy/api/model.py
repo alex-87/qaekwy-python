@@ -14,70 +14,55 @@ Classes:
         as well as for solving the model and retrieving solutions.
 """
 
-from typing import Optional
+from typing import Optional, Union
 
-from qaekwy.api.exceptions import SolverError
-from qaekwy.core.model.constraint.abstract_constraint import AbstractConstraint
-from qaekwy.core.model.constraint.multiply import ConstraintMultiply
-from qaekwy.core.solution import Solution
-
-from qaekwy.core.model.modeller import Modeller
-from qaekwy.core.response import SolutionResponse
-
-from qaekwy.core.model import DIRECTENGINE_API_ENDPOINT
-
-from qaekwy.core.model.variable.variable import (
-    MatrixVariable,
-    Variable,
-    ArrayVariable,
-    Expression,
-    VariableType,
-    VectorExpression,
-)
-from qaekwy.core.model.variable.integer import (
-    IntegerVariable,
-    IntegerExpressionVariable,
-)
-from qaekwy.core.model.variable.integer import IntegerVariableArray
-from qaekwy.core.model.variable.branch import BranchIntegerVal, BranchIntegerVar
-from qaekwy.core.model.variable.float import FloatVariable, FloatExpressionVariable
-from qaekwy.core.model.variable.float import FloatVariableArray
-from qaekwy.core.model.variable.branch import BranchFloatVal, BranchFloatVar
-from qaekwy.core.model.variable.boolean import BooleanVariable
-from qaekwy.core.model.variable.boolean import BooleanVariableArray
-from qaekwy.core.model.variable.branch import BranchBooleanVal, BranchBooleanVar
-
-from qaekwy.core.model.constraint.abs import ConstraintAbs
-from qaekwy.core.model.constraint.acos import ConstraintACos
-from qaekwy.core.model.constraint.asin import ConstraintASin
-from qaekwy.core.model.constraint.atan import ConstraintATan
-from qaekwy.core.model.constraint.cos import ConstraintCos
-from qaekwy.core.model.constraint.distinct import (
-    ConstraintDistinctArray,
-    ConstraintDistinctRow,
-    ConstraintDistinctCol,
-    ConstraintDistinctSlice,
-)
-from qaekwy.core.model.constraint.divide import ConstraintDivide
-from qaekwy.core.model.constraint.element import ConstraintElement
-from qaekwy.core.model.constraint.exponential import ConstraintExponential
-from qaekwy.core.model.constraint.sin import ConstraintSin
-from qaekwy.core.model.constraint.tan import ConstraintTan
-from qaekwy.core.model.constraint.logarithm import ConstraintLogarithm
-from qaekwy.core.model.constraint.maximum import ConstraintMaximum
-from qaekwy.core.model.constraint.minimum import ConstraintMinimum
-from qaekwy.core.model.constraint.member import ConstraintMember
-from qaekwy.core.model.constraint.modulo import ConstraintModulo
-from qaekwy.core.model.constraint.nroot import ConstraintNRoot
-from qaekwy.core.model.constraint.power import ConstraintPower
-from qaekwy.core.model.constraint.if_then_else import ConstraintIfThenElse
-from qaekwy.core.model.constraint.sort import ConstraintSorted, ConstraintReverseSorted
-
-from qaekwy.core.model.specific import SpecificMaximum, SpecificMinimum
-
-from qaekwy.core.model.searcher import SearcherType
-from qaekwy.core.model.cutoff import Cutoff
-from qaekwy.core.engine import DirectEngine
+from ..core.engine import DirectEngine
+from ..core.model import DIRECTENGINE_API_ENDPOINT
+from ..core.model.constraint.abs import ConstraintAbs
+from ..core.model.constraint.abstract_constraint import AbstractConstraint
+from ..core.model.constraint.acos import ConstraintACos
+from ..core.model.constraint.asin import ConstraintASin
+from ..core.model.constraint.atan import ConstraintATan
+from ..core.model.constraint.cos import ConstraintCos
+from ..core.model.constraint.distinct import (ConstraintDistinctArray,
+                                              ConstraintDistinctCol,
+                                              ConstraintDistinctRow,
+                                              ConstraintDistinctSlice)
+from ..core.model.constraint.divide import ConstraintDivide
+from ..core.model.constraint.element import ConstraintElement
+from ..core.model.constraint.exponential import ConstraintExponential
+from ..core.model.constraint.if_then_else import ConstraintIfThenElse
+from ..core.model.constraint.logarithm import ConstraintLogarithm
+from ..core.model.constraint.maximum import ConstraintMaximum
+from ..core.model.constraint.member import ConstraintMember
+from ..core.model.constraint.minimum import ConstraintMinimum
+from ..core.model.constraint.modulo import ConstraintModulo
+from ..core.model.constraint.multiply import ConstraintMultiply
+from ..core.model.constraint.nroot import ConstraintNRoot
+from ..core.model.constraint.power import ConstraintPower
+from ..core.model.constraint.sin import ConstraintSin
+from ..core.model.constraint.sort import (ConstraintReverseSorted,
+                                          ConstraintSorted)
+from ..core.model.constraint.tan import ConstraintTan
+from ..core.model.cutoff import Cutoff
+from ..core.model.modeller import Modeller
+from ..core.model.searcher import SearcherType
+from ..core.model.specific import SpecificMaximum, SpecificMinimum
+from ..core.model.variable.boolean import BooleanVariable, BooleanVariableArray, BooleanVariableMatrix
+from ..core.model.variable.branch import (BranchBooleanVal, BranchBooleanVar,
+                                          BranchFloatVal, BranchFloatVar,
+                                          BranchIntegerVal, BranchIntegerVar)
+from ..core.model.variable.float import (FloatExpressionVariable,
+                                         FloatVariable, FloatVariableArray, FloatVariableMatrix)
+from ..core.model.variable.integer import (IntegerExpressionVariable,
+                                           IntegerVariable,
+                                           IntegerVariableArray, IntegerVariableMatrix)
+from ..core.model.variable.variable import (ArrayVariable, Expression,
+                                            MatrixVariable, Variable,
+                                            VariableType, VectorExpression)
+from ..core.response import SolutionResponse
+from ..core.solution import Solution
+from .exceptions import SolverError
 
 
 class Model:  # pylint: disable=too-many-public-methods
@@ -109,7 +94,7 @@ class Model:  # pylint: disable=too-many-public-methods
         expression: Optional[str] = None,
         branch_val: BranchIntegerVal = BranchIntegerVal.VAL_RND,
         branch_order: Optional[int] = -1,
-    ) -> IntegerVariable | IntegerExpressionVariable:
+    ) -> Union[IntegerVariable, IntegerExpressionVariable]:
         """
         Creates an integer variable or an integer expression variable.
 
@@ -195,7 +180,7 @@ class Model:  # pylint: disable=too-many-public-methods
         branch_var: BranchIntegerVar = BranchIntegerVar.VAR_RND,
         branch_val: BranchIntegerVal = BranchIntegerVal.VAL_RND,
         branch_order: Optional[int] = -1,
-    ) -> MatrixVariable:
+    ) -> IntegerVariableMatrix:
         """
         Creates a matrix of integer variables.
 
@@ -210,10 +195,10 @@ class Model:  # pylint: disable=too-many-public-methods
             branch_order (int, optional): The branching order.
 
         Returns:
-                MatrixVariable: The created variable matrix.
+                IntegerVariableMatrix: The created variable matrix.
         """
         l, h = domain
-        v: MatrixVariable = MatrixVariable(
+        v: IntegerVariableMatrix = IntegerVariableMatrix(
             var_name=name,
             rows=rows,
             cols=cols,
@@ -234,7 +219,7 @@ class Model:  # pylint: disable=too-many-public-methods
         expression: Optional[str] = None,
         branch_val: BranchFloatVal = BranchFloatVal.VAL_RND,
         branch_order: int = -1,
-    ) -> FloatVariable | FloatExpressionVariable:
+    ) -> Union[FloatVariable, FloatExpressionVariable]:
         """
         Creates a float variable or a float expression variable.
 
@@ -310,11 +295,10 @@ class Model:  # pylint: disable=too-many-public-methods
         rows: int,
         cols: int,
         domain: tuple[float, float],
-        specific_domain: Optional[list[float]] = None,
         branch_var: BranchFloatVar = BranchFloatVar.VAR_RND,
         branch_val: BranchFloatVal = BranchFloatVal.VAL_RND,
         branch_order: Optional[int] = -1,
-    ) -> MatrixVariable:
+    ) -> FloatVariableMatrix:
         """
         Creates a matrix of float variables.
 
@@ -323,23 +307,20 @@ class Model:  # pylint: disable=too-many-public-methods
             rows (int): The number of rows in the matrix.
             cols (int): The number of columns in the matrix.
             domain (tuple[float, float]): A tuple representing the (low, high) domain of the variables.
-            specific_domain (list[float], optional): A specific domain for the variables.
             branch_var (BranchFloatVar, optional): The brancher variable strategy.
             branch_val (BranchFloatVal, optional): The brancher value strategy.
             branch_order (int, optional): The branching order.
 
         Returns:
-                MatrixVariable: The created variable matrix.
+                FloatVariableMatrix: The created variable matrix.
         """
         l, h = domain
-        v: MatrixVariable = MatrixVariable(
+        v: FloatVariableMatrix = FloatVariableMatrix(
             var_name=name,
             rows=rows,
             cols=cols,
-            var_type=VariableType.FLOAT_ARRAY,
             domain_low=l,
             domain_high=h,
-            specific_domain=specific_domain,
             branch_var=branch_var,
             branch_val=branch_val,
             branch_order=branch_order,
@@ -406,12 +387,10 @@ class Model:  # pylint: disable=too-many-public-methods
         name: str,
         rows: int,
         cols: int,
-        domain: tuple[bool, bool],
-        specific_domain: Optional[list[bool]] = None,
         branch_var: BranchBooleanVar = BranchBooleanVar.VAR_RND,
         branch_val: BranchBooleanVal = BranchBooleanVal.VAL_RND,
         branch_order: Optional[int] = -1,
-    ) -> MatrixVariable:
+    ) -> BooleanVariableMatrix:
         """
         Creates a matrix of boolean variables.
 
@@ -419,24 +398,17 @@ class Model:  # pylint: disable=too-many-public-methods
             name (str): The name of the variable matrix.
             rows (int): The number of rows in the matrix.
             cols (int): The number of columns in the matrix.
-            domain (tuple[boolean, boolean]): A tuple representing the (low, high) domain of the variables.
-            specific_domain (list[boolean], optional): A specific domain for the variables.
             branch_var (BranchBooleanVar, optional): The brancher variable strategy.
             branch_val (BranchBooleanVal, optional): The brancher value strategy.
             branch_order (int, optional): The branching order.
 
         Returns:
-                MatrixVariable: The created variable matrix.
+                BooleanVariableMatrix: The created variable matrix.
         """
-        l, h = domain
-        v: MatrixVariable = MatrixVariable(
+        v: BooleanVariableMatrix = BooleanVariableMatrix(
             var_name=name,
             rows=rows,
             cols=cols,
-            var_type=VariableType.BOOLEAN_ARRAY,
-            domain_low=l,
-            domain_high=h,
-            specific_domain=specific_domain,
             branch_var=branch_var,
             branch_val=branch_val,
             branch_order=branch_order,
@@ -509,7 +481,7 @@ class Model:  # pylint: disable=too-many-public-methods
         constraint = ConstraintCos(var_1, var_2)
         self._modeller.add_constraint(constraint)
 
-    def constraint_distinct(self, var: ArrayVariable | VectorExpression) -> None:
+    def constraint_distinct(self, var: Union[ArrayVariable, VectorExpression]) -> None:
         """
         Add a distinct constraint.
 
@@ -808,8 +780,8 @@ class Model:  # pylint: disable=too-many-public-methods
         self,
         searcher: str = "dfs",
         solution_limit: int = 1,
-        cutoff: Cutoff | None = None,
-    ) -> list[Solution] | None:
+        cutoff: Union[Cutoff, None] = None,
+    ) -> Union[list[Solution], None]:
         """
         Solves the model.
 
@@ -852,8 +824,8 @@ class Model:  # pylint: disable=too-many-public-methods
         return solution_response.get_solutions()
 
     def solve_one(
-        self, searcher: str = "dfs", cutoff: Cutoff | None = None
-    ) -> Solution | None:
+        self, searcher: str = "dfs", cutoff: Union[Cutoff, None] = None
+    ) -> Union[Solution, None]:
         """
         Solves the model and returns one solution.
 

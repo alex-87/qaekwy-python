@@ -18,49 +18,44 @@ Typical usage example:
     json_model = modeller.to_json()
 """
 
-from typing import Any, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
-from qaekwy.core.exception.model_failure import ModelFailure
+from ..exception.model_failure import ModelFailure
+from .constraint.abs import ConstraintAbs
+from .constraint.abstract_constraint import AbstractConstraint
+from .constraint.acos import ConstraintACos
+from .constraint.asin import ConstraintASin
+from .constraint.atan import ConstraintATan
+from .constraint.cos import ConstraintCos
+from .constraint.distinct import (ConstraintDistinctArray,
+                                  ConstraintDistinctCol, ConstraintDistinctRow,
+                                  ConstraintDistinctSlice)
+from .constraint.divide import ConstraintDivide
+from .constraint.element import ConstraintElement
+from .constraint.exponential import ConstraintExponential
+from .constraint.if_then_else import ConstraintIfThenElse
+from .constraint.logarithm import ConstraintLogarithm
+from .constraint.maximum import ConstraintMaximum
+from .constraint.member import ConstraintMember
+from .constraint.minimum import ConstraintMinimum
+from .constraint.modulo import ConstraintModulo
+from .constraint.multiply import ConstraintMultiply
+from .constraint.nroot import ConstraintNRoot
+from .constraint.power import ConstraintPower
+from .constraint.relational import RelationalExpression
+from .constraint.sin import ConstraintSin
+from .constraint.sort import ConstraintReverseSorted, ConstraintSorted
+from .constraint.tan import ConstraintTan
+from .cutoff import Cutoff
+from .searcher import SearcherType
+from .specific import SpecificMaximum, SpecificMinimum
+from .variable.variable import (ArrayVariable, Expression, MatrixVariable,
+                                Variable, VariableType)
 
-from qaekwy.core.model.constraint.abstract_constraint import AbstractConstraint
-from qaekwy.core.model.constraint.abs import ConstraintAbs
-from qaekwy.core.model.constraint.acos import ConstraintACos
-from qaekwy.core.model.constraint.asin import ConstraintASin
-from qaekwy.core.model.constraint.atan import ConstraintATan
-from qaekwy.core.model.constraint.cos import ConstraintCos
-from qaekwy.core.model.constraint.distinct import (
-    ConstraintDistinctArray,
-    ConstraintDistinctCol,
-    ConstraintDistinctRow,
-    ConstraintDistinctSlice,
-)
-from qaekwy.core.model.constraint.divide import ConstraintDivide
-from qaekwy.core.model.constraint.element import ConstraintElement
-from qaekwy.core.model.constraint.exponential import ConstraintExponential
-from qaekwy.core.model.constraint.logarithm import ConstraintLogarithm
-from qaekwy.core.model.constraint.maximum import ConstraintMaximum
-from qaekwy.core.model.constraint.minimum import ConstraintMinimum
-from qaekwy.core.model.constraint.modulo import ConstraintModulo
-from qaekwy.core.model.constraint.member import ConstraintMember
-from qaekwy.core.model.constraint.multiply import ConstraintMultiply
-from qaekwy.core.model.constraint.nroot import ConstraintNRoot
-from qaekwy.core.model.constraint.power import ConstraintPower
-from qaekwy.core.model.constraint.relational import RelationalExpression
-from qaekwy.core.model.constraint.sin import ConstraintSin
-from qaekwy.core.model.constraint.sort import ConstraintSorted, ConstraintReverseSorted
-from qaekwy.core.model.constraint.tan import ConstraintTan
-from qaekwy.core.model.constraint.if_then_else import ConstraintIfThenElse
-
-from qaekwy.core.model.cutoff import Cutoff
-from qaekwy.core.model.searcher import SearcherType
-from qaekwy.core.model.specific import SpecificMaximum, SpecificMinimum
-from qaekwy.core.model.variable.variable import (
-    ArrayVariable,
-    Expression,
-    MatrixVariable,
-    Variable,
-    VariableType,
-)
+ConstraintFactory = Callable[
+    [dict, list[Union[Variable, ArrayVariable, MatrixVariable]]],
+    AbstractConstraint,
+]
 
 
 class Modeller:
@@ -68,7 +63,7 @@ class Modeller:
     Constructs and configures optimization models.
 
     Attributes:
-        variable_list (list[Union[Variable, ArrayVariable]]): Collection of model variables.
+        variable_list (list[Union[Variable, ArrayVariable, MatrixVariable]]): Collection of model variables.
         constraint_list (list[Union[AbstractConstraint]]): Collection of model constraints.
         objective_list (list[Union[SpecificMinimum, SpecificMaximum]]): Optimization objectives (minimize or maximize).
         searcher (SearcherType): Strategy for searching solution space.
@@ -77,11 +72,40 @@ class Modeller:
         solution_limit (int): Maximum number of solutions to return.
     """
 
+    CONSTRAINT_REGISTRY: Dict[str, ConstraintFactory] = {
+        "abs": ConstraintAbs.from_json,
+        "acos": ConstraintACos.from_json,
+        "asin": ConstraintASin.from_json,
+        "atan": ConstraintATan.from_json,
+        "cos": ConstraintCos.from_json,
+        "distinct_array": ConstraintDistinctArray.from_json,
+        "distinct_col": ConstraintDistinctCol.from_json,
+        "distinct_row": ConstraintDistinctRow.from_json,
+        "distinct_slice": ConstraintDistinctSlice.from_json,
+        "divide": ConstraintDivide.from_json,
+        "element": ConstraintElement.from_json,
+        "exponential": ConstraintExponential.from_json,
+        "logarithm": ConstraintLogarithm.from_json,
+        "maximum": ConstraintMaximum.from_json,
+        "minimum": ConstraintMinimum.from_json,
+        "modulo": ConstraintModulo.from_json,
+        "member": ConstraintMember.from_json,
+        "multiply": ConstraintMultiply.from_json,
+        "nroot": ConstraintNRoot.from_json,
+        "power": ConstraintPower.from_json,
+        "rel": lambda data, _: RelationalExpression.from_json(data),
+        "sin": ConstraintSin.from_json,
+        "sorted": ConstraintSorted.from_json,
+        "rsorted": ConstraintReverseSorted.from_json,
+        "tan": ConstraintTan.from_json,
+        "if_then_else": lambda data, _: ConstraintIfThenElse.from_json(data),
+    }
+
     def __init__(self) -> None:
         """
         Initializes an empty Modeller instance.
         """
-        self.variable_list: list[Union[Variable, ArrayVariable]] = []
+        self.variable_list: list[Union[Variable, ArrayVariable, MatrixVariable]] = []
         self.constraint_list: list[Union[AbstractConstraint]] = []
         self.objective_list: list[Union[SpecificMinimum, SpecificMaximum]] = []
         self.searcher: Optional[SearcherType] = None
@@ -89,12 +113,14 @@ class Modeller:
         self.callback_url: Optional[str] = None
         self.solution_limit: int = 1
 
-    def add_variable(self, variable: Union[Variable, ArrayVariable]) -> "Modeller":
+    def add_variable(
+        self, variable: Union[Variable, ArrayVariable, MatrixVariable]
+    ) -> "Modeller":
         """
         Adds a variable or array of variables to the model.
 
         Args:
-            variable: A single Variable or ArrayVariable instance.
+            variable: A single Variable, ArrayVariable or MatrixVariable instance.
 
         Returns:
             self: Enables method chaining.
@@ -150,7 +176,7 @@ class Modeller:
         self.searcher = searcher
         return self
 
-    def set_cutoff(self, cutoff: Cutoff | None) -> "Modeller":
+    def set_cutoff(self, cutoff: Union[Cutoff, None]) -> "Modeller":
         """
         Sets a cutoff condition to terminate optimization early.
 
@@ -229,72 +255,20 @@ class Modeller:
 
     @staticmethod
     def _constraints_factory(
-        constraint_data: dict, variable_list: list[Union[Variable, ArrayVariable]]
+        constraint_data: dict,
+        variable_list: list[Union[Variable, ArrayVariable, MatrixVariable]],
     ) -> AbstractConstraint:
         """
         Factory method to create a Constraint instance from JSON data.
-
-        Args:
-            constraint_data (dict): A dictionary containing constraint information.
-            variable_list (list[Union[Variable, ArrayVariable]]): A list of Variable instances.
-
-        Returns:
-            AbstractConstraint: An AbstractConstraint instance.
         """
-        if constraint_data.get("type") == "abs":
-            return ConstraintAbs.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "acos":
-            return ConstraintACos.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "asin":
-            return ConstraintASin.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "atan":
-            return ConstraintATan.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "cos":
-            return ConstraintCos.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "distinct_array":
-            return ConstraintDistinctArray.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "distinct_col":
-            return ConstraintDistinctCol.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "distinct_row":
-            return ConstraintDistinctRow.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "distinct_slice":
-            return ConstraintDistinctSlice.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "divide":
-            return ConstraintDivide.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "element":
-            return ConstraintElement.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "exponential":
-            return ConstraintExponential.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "logarithm":
-            return ConstraintLogarithm.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "maximum":
-            return ConstraintMaximum.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "minimum":
-            return ConstraintMinimum.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "modulo":
-            return ConstraintModulo.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "member":
-            return ConstraintMember.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "multiply":
-            return ConstraintMultiply.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "nroot":
-            return ConstraintNRoot.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "power":
-            return ConstraintPower.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "rel":
-            return RelationalExpression.from_json(constraint_data)
-        if constraint_data.get("type") == "sin":
-            return ConstraintSin.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "sorted":
-            return ConstraintSorted.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "rsorted":
-            return ConstraintReverseSorted.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "tan":
-            return ConstraintTan.from_json(constraint_data, variable_list)
-        if constraint_data.get("type") == "if_then_else":
-            return ConstraintIfThenElse.from_json(constraint_data)
+        constraint_type: str = str(constraint_data.get("type"))
 
-        raise ValueError(f"Unknown constraint type: {constraint_data.get('type')}")
+        try:
+            factory = Modeller.CONSTRAINT_REGISTRY[constraint_type]
+        except KeyError as exc:
+            raise ValueError(f"Unknown constraint type: {constraint_type}") from exc
+
+        return factory(constraint_data, variable_list)
 
     @staticmethod
     def from_json(json_data: dict) -> "Modeller":
@@ -308,19 +282,32 @@ class Modeller:
             Modeller: A Modeller instance.
         """
         modeller = Modeller()
+
+        variable_list: list = []
+        array_variable_list: list = []
+        matrix_variable_list: list = []
+        for v in json_data.get("var", []):
+            var_type = VariableType.from_json(v["type"])
+            if var_type in [
+                VariableType.INTEGER_ARRAY,
+                VariableType.FLOAT_ARRAY,
+                VariableType.BOOLEAN_ARRAY,
+            ]:
+                if v.get("subtype", "") == "matrix":
+                    matrix_variable_list.append(MatrixVariable.from_json(v))
+                else:
+                    array_variable_list.append(ArrayVariable.from_json(v))
+            elif var_type in [
+                VariableType.INTEGER,
+                VariableType.FLOAT,
+                VariableType.BOOLEAN,
+            ]:
+                variable_list.append(Variable.from_json(v))
+
         modeller.variable_list = (
-            [Variable.from_json(v) for v in json_data.get("var", []) if v is not None]
-            + [
-                ArrayVariable.from_json(v)
-                for v in json_data.get("var", [])
-                if v is not None
-            ]
-            + [
-                MatrixVariable.from_json(v)
-                for v in json_data.get("var", [])
-                if v is not None
-            ]
+            variable_list + array_variable_list + matrix_variable_list
         )
+
         modeller.constraint_list = []
         for c in json_data.get("constraint", []):
             constraint = Modeller._constraints_factory(c, modeller.variable_list)

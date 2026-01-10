@@ -12,20 +12,9 @@ Classes:
 
 from typing import Optional
 
-from qaekwy.core.model.variable.branch import (
-    BranchIntegerVal,
-    BranchIntegerVar,
-    BranchVal,
-    BranchVar,
-)
-from qaekwy.core.model.variable.variable import (
-    ArrayVariable,
-    Expression,
-    ExpressionVariable,
-    MatrixVariable,
-    Variable,
-    VariableType,
-)
+from .branch import BranchIntegerVal, BranchIntegerVar, BranchVal, BranchVar
+from .variable import (ArrayVariable, Expression, ExpressionVariable,
+                       MatrixVariable, Variable, VariableType)
 
 
 class IntegerVariable(Variable):

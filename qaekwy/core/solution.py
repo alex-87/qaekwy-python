@@ -36,7 +36,7 @@ class Solution(dict):
         z_value = solution.z  # z_value is None
     """
 
-    def __init__( # pylint: disable=too-many-locals
+    def __init__(  # pylint: disable=too-many-locals
         self, solution_json_content: list[dict]
     ) -> None:
         self.solution_json_content = solution_json_content
