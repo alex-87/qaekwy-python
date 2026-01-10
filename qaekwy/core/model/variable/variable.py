@@ -19,7 +19,7 @@ Classes:
 from enum import Enum
 from typing import Optional, Union
 
-from qaekwy.core.model.variable.branch import (
+from .branch import (
     BranchBooleanVal,
     BranchBooleanVar,
     BranchFloatVal,
@@ -163,23 +163,10 @@ class ExpressionArray:
         array_name (str): The name of the array.
 
     Methods:
-        col(table_width: int, column: int) -> Expression:
-            Creates an Expression for accessing a column in the array-like structure.
-
-        row(table_width: int, row: int) -> Expression:
-            Creates an Expression for accessing a row in the array-like structure.
-
-        slice() -> Expression:
-            Creates an Expression for accessing a slice in the array-like structure.
 
         __getitem__(pos: int) -> Expression:
             Overloaded method to create an Expression for accessing a specific
             position in the array.
-
-    Example:
-        col_expression =
-            my_array.col(table_width=4, column=2)  # Creates an expression for column access.
-
     """
 
     def __init__(self, array_name: str) -> None:
@@ -309,16 +296,6 @@ class ArrayVariable(ExpressionArray):
             ArrayVariable: An instance of the ArrayVariable class.
         """
         var_type = VariableType.from_json(json_data["type"])
-        if (
-            var_type
-            not in [
-                VariableType.INTEGER_ARRAY,
-                VariableType.FLOAT_ARRAY,
-                VariableType.BOOLEAN_ARRAY,
-            ]
-            or json_data.get("subtype", "") == "matrix"
-        ):
-            return None
 
         branch_var_enum: Union[
             type[BranchIntegerVar], type[BranchFloatVar], type[BranchBooleanVar]
@@ -405,7 +382,6 @@ class VectorExpression(ExpressionArray):
     def __str__(self):
         if self.kind == "row":
             return f"{self.matrix.var_name}[{self.matrix.rows}][{self.matrix.cols}][r][{self.params['row']}]"
-
         if self.kind == "col":
             return f"{self.matrix.var_name}[{self.matrix.rows}][{self.matrix.cols}][c][{self.params['col']}]"
         if self.kind == "slice":
@@ -413,19 +389,8 @@ class VectorExpression(ExpressionArray):
 
         return "VectorExpression()"
 
-    def to_json(self):
-        """
-        Converts the vector expression to a JSON representation.
-        """
-        return {
-            "type": "vector",
-            "matrix": self.matrix.var_name,
-            "kind": self.kind,
-            **self.params,
-        }
 
-
-class MatrixVariable(ArrayVariable):
+class MatrixVariable:
     """
     Represents a matrix-type variable.
 
@@ -463,27 +428,28 @@ class MatrixVariable(ArrayVariable):
         branch_val: BranchVal = BranchIntegerVal.VAL_RND,
         branch_order: Optional[int] = -1,
     ) -> None:
-        length = rows * cols
 
-        # Check if var_name is already in the form 'MATRIX_{rows}_{cols}_{var_name}'
-        expected_prefix = f"MATRIX${rows}${cols}$"
-        if var_name.startswith(expected_prefix):
-            raise ValueError(
-                f"var_name should not start with '{expected_prefix}'. Please provide a base variable name."
-            )
+        typed_var_name: str = var_name
+        if not var_name.startswith(f"MATRIX${rows}${cols}$"):
+            if var_name.startswith("MATRIX$"):
+                parts = var_name.split("$", 3)
+                part_col, part_row = int(parts[1]), int(parts[2])
+                if rows != part_row or cols != part_col:
+                    raise ValueError(
+                        f"var_name '{var_name}' should not start with 'MATRIX$'. Please provide a base variable name."
+                    )
+            else:
+                typed_var_name = f"MATRIX${rows}${cols}${var_name}"
 
-        typed_var_name: str = f"MATRIX${rows}${cols}${var_name}"
-        super().__init__(
-            typed_var_name,
-            length,
-            var_type,
-            domain_low,
-            domain_high,
-            specific_domain,
-            branch_var,
-            branch_val,
-            branch_order,
-        )
+        self.var_name = typed_var_name
+        self.var_type = var_type
+        self.length = rows * cols
+        self.domain_low = domain_low
+        self.domain_high = domain_high
+        self.specific_domain = specific_domain
+        self.branch_var = branch_var
+        self.branch_val = branch_val
+        self.branching_order = branch_order
         self.rows = rows
         self.cols = cols
 
@@ -495,16 +461,6 @@ class MatrixVariable(ArrayVariable):
         def __getitem__(self, col: int) -> Expression:
             return Expression(
                 f"{self.matrix_var.var_name}[{self.row * (self.matrix_var.cols) + col}]"
-            )
-
-    class _MatrixCol:
-        def __init__(self, matrix_var: "MatrixVariable", col: int):
-            self.matrix_var = matrix_var
-            self.col = col
-
-        def __getitem__(self, row: int) -> Expression:
-            return Expression(
-                f"{self.matrix_var.var_name}[{row * (self.matrix_var.cols) + self.col}]"
             )
 
     def __getitem__(self, row: int) -> "_MatrixRow":
@@ -548,7 +504,24 @@ class MatrixVariable(ArrayVariable):
         Returns:
             dict: A JSON representation of the matrix variable.
         """
-        data_json = super().to_json()
+        data_json = {
+            "name": self.var_name,
+            "type": self.var_type.value,
+            "length": self.length,
+            "brancher_variable": self.branch_var.value,
+            "brancher_value": self.branch_val.value,
+            "branching_order": self.branching_order,
+        }
+
+        if self.domain_low is not None:
+            data_json["domlow"] = self.domain_low
+
+        if self.domain_high is not None:
+            data_json["domup"] = self.domain_high
+
+        if self.specific_domain is not None:
+            data_json["specific_domain"] = self.specific_domain
+
         data_json["rows"] = self.rows
         data_json["cols"] = self.cols
         data_json["subtype"] = "matrix"
@@ -566,16 +539,6 @@ class MatrixVariable(ArrayVariable):
             MatrixVariable: An instance of the MatrixVariable class.
         """
         var_type = VariableType.from_json(json_data["type"])
-        if (
-            var_type
-            not in [
-                VariableType.INTEGER_ARRAY,
-                VariableType.FLOAT_ARRAY,
-                VariableType.BOOLEAN_ARRAY,
-            ]
-            or json_data.get("subtype", "") != "matrix"
-        ):
-            return None
 
         branch_var_enum: Union[
             type[BranchIntegerVar], type[BranchFloatVar], type[BranchBooleanVar]
@@ -605,6 +568,7 @@ class MatrixVariable(ArrayVariable):
 
         return MatrixVariable(
             var_name=json_data["name"],
+            var_type=var_type,
             rows=json_data["rows"],
             cols=json_data["cols"],
             domain_low=json_data.get("domlow"),

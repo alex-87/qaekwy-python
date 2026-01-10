@@ -10,13 +10,9 @@ Classes:
 """
 
 from typing import Optional
-from qaekwy.core.model.variable.branch import (
-    BranchBooleanVal,
-    BranchBooleanVar,
-    BranchVal,
-    BranchVar,
-)
-from qaekwy.core.model.variable.variable import (
+
+from .branch import BranchBooleanVal, BranchBooleanVar, BranchVal, BranchVar
+from .variable import (
     ArrayVariable,
     Expression,
     ExpressionVariable,

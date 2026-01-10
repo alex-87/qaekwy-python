@@ -2,8 +2,8 @@
 This module defines the RelationalExpression class.
 """
 
-from qaekwy.core.model.constraint.abstract_constraint import AbstractConstraint
-from qaekwy.core.model.variable.variable import Expression, VariableType
+from ..variable.variable import Expression, VariableType
+from .abstract_constraint import AbstractConstraint
 
 
 class RelationalExpression(AbstractConstraint):

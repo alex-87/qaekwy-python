@@ -78,9 +78,10 @@ from typing import Any, Optional
 
 import requests
 
-from qaekwy.core.model import DIRECTENGINE_API_ENDPOINT
-from qaekwy.core.model.modeller import Modeller
-from qaekwy.core.response import (
+from ..__metadata__ import __software__, __version__
+from .model import DIRECTENGINE_API_ENDPOINT
+from .model.modeller import Modeller
+from .response import (
     AbstractResponse,
     ClusterStatusResponse,
     EchoResponse,
@@ -89,11 +90,6 @@ from qaekwy.core.response import (
     SolutionResponse,
     StatusResponse,
     VersionResponse,
-)
-
-from qaekwy.__metadata__ import (
-    __software__,
-    __version__,
 )
 
 

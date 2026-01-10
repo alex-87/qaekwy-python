@@ -23,7 +23,7 @@ Functions:
 
 """
 
-from qaekwy.core.model.variable.variable import Expression, ExpressionArray
+from .variable.variable import Expression, ExpressionArray
 
 
 def maximum(expr: ExpressionArray) -> Expression:

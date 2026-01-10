@@ -2,8 +2,8 @@
 This module defines the ConstraintMember class.
 """
 
-from qaekwy.core.model.constraint.abstract_constraint import AbstractConstraint
-from qaekwy.core.model.variable.variable import ArrayVariable, Variable
+from ..variable.variable import ArrayVariable, Variable
+from .abstract_constraint import AbstractConstraint
 
 
 class ConstraintMember(AbstractConstraint):

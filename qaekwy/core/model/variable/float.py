@@ -11,8 +11,8 @@ Classes:
 
 from typing import Optional
 
-from qaekwy.core.model.variable.branch import BranchFloatVal, BranchFloatVar, BranchVal
-from qaekwy.core.model.variable.variable import (
+from .branch import BranchFloatVal, BranchFloatVar, BranchVal
+from .variable import (
     ArrayVariable,
     Expression,
     ExpressionVariable,

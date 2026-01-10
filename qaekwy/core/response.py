@@ -44,8 +44,8 @@ import json
 from abc import ABC
 from typing import Any, Optional
 
-from qaekwy.core.explanation import Explanation
-from qaekwy.core.solution import Solution
+from .explanation import Explanation
+from .solution import Solution
 
 
 class NodeStatus:
@@ -348,7 +348,7 @@ class VersionResponse(AbstractResponse):
         Returns:
             str: The name of the application.
         """
-        return self.response_content["app"]
+        return str(self.response_content["app"])
 
     def get_author(self) -> str:
         """
@@ -357,7 +357,7 @@ class VersionResponse(AbstractResponse):
         Returns:
             str: The author of the application.
         """
-        return self.response_content["author"]
+        return str(self.response_content["author"])
 
     def get_version(self) -> str:
         """
@@ -366,7 +366,7 @@ class VersionResponse(AbstractResponse):
         Returns:
             str: The version of the application.
         """
-        return self.response_content["version"]
+        return str(self.response_content["version"])
 
     def get_version_major(self) -> int:
         """
@@ -375,7 +375,7 @@ class VersionResponse(AbstractResponse):
         Returns:
             int: The major version number of the application.
         """
-        return self.response_content["version_major"]
+        return int(self.response_content["version_major"])
 
     def get_version_minor(self) -> int:
         """
@@ -384,7 +384,7 @@ class VersionResponse(AbstractResponse):
         Returns:
             int: The minor version number of the application.
         """
-        return self.response_content["version_minor"]
+        return int(self.response_content["version_minor"])
 
     def get_version_build(self) -> int:
         """
@@ -393,7 +393,7 @@ class VersionResponse(AbstractResponse):
         Returns:
             int: The build version number of the application.
         """
-        return self.response_content["version_build"]
+        return int(self.response_content["version_build"])
 
     def get_release(self) -> str:
         """
@@ -402,7 +402,7 @@ class VersionResponse(AbstractResponse):
         Returns:
             str: The release information of the application.
         """
-        return self.response_content["version_release"]
+        return str(self.response_content["version_release"])
 
 
 class ClusterStatusResponse(AbstractResponse):

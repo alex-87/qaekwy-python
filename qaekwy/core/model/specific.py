@@ -9,8 +9,8 @@ Classes:
 
 """
 
-from qaekwy.core.model.constraint.abstract_constraint import AbstractConstraint
-from qaekwy.core.model.variable.variable import Variable
+from .constraint.abstract_constraint import AbstractConstraint
+from .variable.variable import Variable
 
 
 class SpecificMinimum(AbstractConstraint):
