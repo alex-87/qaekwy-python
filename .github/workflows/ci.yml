@@ -43,10 +43,10 @@ jobs:
 
       - name: Test with Pytest + coverage
         run: |
-          python -m pytest --cov=qaekwy --cov-report=xml --cov-fail-under=80 tests 
+          python -m pytest --cov=qaekwy --cov-report=json --cov-fail-under=80 tests 
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: coverage.xml
+          files: coverage.json
           fail_ci_if_error: true
