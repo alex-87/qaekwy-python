@@ -15,6 +15,9 @@ It provides a clean, Pythonic interface for defining variables, constraints, and
 * 👩‍🏫 **Teaching** — Demonstrate CSP concepts with no setup
 * 🔬 **Research & Prototyping** — Explore models, heuristics, and ideas fast
 
+## 📚 Documentation
+
+Visit the [Qaekwy Documentation](https://docs.qaekwy.io/) for guides, teaching resources, and detailed examples.
 
 ## 🚀 Quick Start
 
@@ -71,11 +74,6 @@ Specify minimization and maximization goals to guide the solver toward optimal s
 Configure solver behavior using explicit search strategies such as Depth-First Search and Branch-and-Bound, along with branching heuristics and cutoffs.
 * **Cloud-Native Execution**
 Transparent handling of model serialization and execution on the Qaekwy Cloud Solver instance.
-
-
-## 📚 Documentation
-
-Visit the [Qaekwy Documentation](https://docs.qaekwy.io/) for guides, teaching resources, and detailed examples.
 
 
 ## Examples
