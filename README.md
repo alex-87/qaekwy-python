@@ -44,7 +44,7 @@ z = m.integer_variable("z", (-10, 10))
 m.constraint(x + 2*y + 3*z <= 15)
 m.maximize(x)
 
-m.solve_one().pretty_print()
+m.solve_one(searcher="bab").pretty_print()
 ```
 
 *Output*:
@@ -53,9 +53,9 @@ m.solve_one().pretty_print()
 ----------------------------------------
 Solution:
 ----------------------------------------
-x: -3
+x: 10
 y: 2
-z: 4
+z: -4
 ----------------------------------------
 ```
 
