@@ -27,9 +27,12 @@ from .constraint.acos import ConstraintACos
 from .constraint.asin import ConstraintASin
 from .constraint.atan import ConstraintATan
 from .constraint.cos import ConstraintCos
-from .constraint.distinct import (ConstraintDistinctArray,
-                                  ConstraintDistinctCol, ConstraintDistinctRow,
-                                  ConstraintDistinctSlice)
+from .constraint.distinct import (
+    ConstraintDistinctArray,
+    ConstraintDistinctCol,
+    ConstraintDistinctRow,
+    ConstraintDistinctSlice,
+)
 from .constraint.divide import ConstraintDivide
 from .constraint.element import ConstraintElement
 from .constraint.exponential import ConstraintExponential
@@ -49,8 +52,13 @@ from .constraint.tan import ConstraintTan
 from .cutoff import Cutoff
 from .searcher import SearcherType
 from .specific import SpecificMaximum, SpecificMinimum
-from .variable.variable import (ArrayVariable, Expression, MatrixVariable,
-                                Variable, VariableType)
+from .variable.variable import (
+    ArrayVariable,
+    Expression,
+    MatrixVariable,
+    Variable,
+    VariableType,
+)
 
 ConstraintFactory = Callable[
     [dict, list[Union[Variable, ArrayVariable, MatrixVariable]]],

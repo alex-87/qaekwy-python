@@ -12,8 +12,14 @@ Classes:
 from typing import Optional
 
 from .branch import BranchBooleanVal, BranchBooleanVar, BranchVal, BranchVar
-from .variable import (ArrayVariable, Expression, ExpressionVariable,
-                       MatrixVariable, Variable, VariableType)
+from .variable import (
+    ArrayVariable,
+    Expression,
+    ExpressionVariable,
+    MatrixVariable,
+    Variable,
+    VariableType,
+)
 
 
 class BooleanVariable(Variable):

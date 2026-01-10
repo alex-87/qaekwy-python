@@ -81,9 +81,16 @@ import requests
 from ..__metadata__ import __software__, __version__
 from .model import DIRECTENGINE_API_ENDPOINT
 from .model.modeller import Modeller
-from .response import (AbstractResponse, ClusterStatusResponse, EchoResponse,
-                       ExplanationResponse, ModelJSonResponse,
-                       SolutionResponse, StatusResponse, VersionResponse)
+from .response import (
+    AbstractResponse,
+    ClusterStatusResponse,
+    EchoResponse,
+    ExplanationResponse,
+    ModelJSonResponse,
+    SolutionResponse,
+    StatusResponse,
+    VersionResponse,
+)
 
 
 class AbstractAction(ABC):

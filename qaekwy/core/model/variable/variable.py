@@ -19,9 +19,16 @@ Classes:
 from enum import Enum
 from typing import Optional, Union
 
-from .branch import (BranchBooleanVal, BranchBooleanVar, BranchFloatVal,
-                     BranchFloatVar, BranchIntegerVal, BranchIntegerVar,
-                     BranchVal, BranchVar)
+from .branch import (
+    BranchBooleanVal,
+    BranchBooleanVar,
+    BranchFloatVal,
+    BranchFloatVar,
+    BranchIntegerVal,
+    BranchIntegerVar,
+    BranchVal,
+    BranchVar,
+)
 
 
 class VariableType(Enum):

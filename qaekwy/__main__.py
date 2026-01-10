@@ -4,8 +4,14 @@ Main Module
 
 import argparse
 
-from .__metadata__ import (__author__, __copyright__, __license__,
-                           __license_url__, __software__, __version__)
+from .__metadata__ import (
+    __author__,
+    __copyright__,
+    __license__,
+    __license_url__,
+    __software__,
+    __version__,
+)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Qaekwy Python Library")

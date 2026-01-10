@@ -12,8 +12,14 @@ Classes:
 from typing import Optional
 
 from .branch import BranchFloatVal, BranchFloatVar, BranchVal
-from .variable import (ArrayVariable, Expression, ExpressionVariable,
-                       MatrixVariable, Variable, VariableType)
+from .variable import (
+    ArrayVariable,
+    Expression,
+    ExpressionVariable,
+    MatrixVariable,
+    Variable,
+    VariableType,
+)
 
 
 class FloatVariable(Variable):

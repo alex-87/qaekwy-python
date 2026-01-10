@@ -24,10 +24,12 @@ from ..core.model.constraint.acos import ConstraintACos
 from ..core.model.constraint.asin import ConstraintASin
 from ..core.model.constraint.atan import ConstraintATan
 from ..core.model.constraint.cos import ConstraintCos
-from ..core.model.constraint.distinct import (ConstraintDistinctArray,
-                                              ConstraintDistinctCol,
-                                              ConstraintDistinctRow,
-                                              ConstraintDistinctSlice)
+from ..core.model.constraint.distinct import (
+    ConstraintDistinctArray,
+    ConstraintDistinctCol,
+    ConstraintDistinctRow,
+    ConstraintDistinctSlice,
+)
 from ..core.model.constraint.divide import ConstraintDivide
 from ..core.model.constraint.element import ConstraintElement
 from ..core.model.constraint.exponential import ConstraintExponential
@@ -41,25 +43,44 @@ from ..core.model.constraint.multiply import ConstraintMultiply
 from ..core.model.constraint.nroot import ConstraintNRoot
 from ..core.model.constraint.power import ConstraintPower
 from ..core.model.constraint.sin import ConstraintSin
-from ..core.model.constraint.sort import (ConstraintReverseSorted,
-                                          ConstraintSorted)
+from ..core.model.constraint.sort import ConstraintReverseSorted, ConstraintSorted
 from ..core.model.constraint.tan import ConstraintTan
 from ..core.model.cutoff import Cutoff
 from ..core.model.modeller import Modeller
 from ..core.model.searcher import SearcherType
 from ..core.model.specific import SpecificMaximum, SpecificMinimum
-from ..core.model.variable.boolean import BooleanVariable, BooleanVariableArray, BooleanVariableMatrix
-from ..core.model.variable.branch import (BranchBooleanVal, BranchBooleanVar,
-                                          BranchFloatVal, BranchFloatVar,
-                                          BranchIntegerVal, BranchIntegerVar)
-from ..core.model.variable.float import (FloatExpressionVariable,
-                                         FloatVariable, FloatVariableArray, FloatVariableMatrix)
-from ..core.model.variable.integer import (IntegerExpressionVariable,
-                                           IntegerVariable,
-                                           IntegerVariableArray, IntegerVariableMatrix)
-from ..core.model.variable.variable import (ArrayVariable, Expression,
-                                            MatrixVariable, Variable,
-                                            VariableType, VectorExpression)
+from ..core.model.variable.boolean import (
+    BooleanVariable,
+    BooleanVariableArray,
+    BooleanVariableMatrix,
+)
+from ..core.model.variable.branch import (
+    BranchBooleanVal,
+    BranchBooleanVar,
+    BranchFloatVal,
+    BranchFloatVar,
+    BranchIntegerVal,
+    BranchIntegerVar,
+)
+from ..core.model.variable.float import (
+    FloatExpressionVariable,
+    FloatVariable,
+    FloatVariableArray,
+    FloatVariableMatrix,
+)
+from ..core.model.variable.integer import (
+    IntegerExpressionVariable,
+    IntegerVariable,
+    IntegerVariableArray,
+    IntegerVariableMatrix,
+)
+from ..core.model.variable.variable import (
+    ArrayVariable,
+    Expression,
+    Variable,
+    VariableType,
+    VectorExpression,
+)
 from ..core.response import SolutionResponse
 from ..core.solution import Solution
 from .exceptions import SolverError
