@@ -2,7 +2,8 @@
 
 *A modern, open-source Python framework for declarative constraint programming and combinatorial optimization*.
 
-![GitHub License](https://img.shields.io/github/license/alex-87/qaekwy-python) ![PyPI - Version](https://img.shields.io/pypi/v/qaekwy)
+![GitHub License](https://img.shields.io/github/license/alex-87/qaekwy-python) ![PyPI - Version](https://img.shields.io/pypi/v/qaekwy) ![Coverage](https://codecov.io/gh/alex-87/qaekwy-python/branch/main/graph/badge.svg)
+
 
 ## Overview
 
